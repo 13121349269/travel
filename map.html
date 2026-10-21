@@ -31,14 +31,14 @@
   .spot-item .meta { font-size: 10px; color: #8b949e; margin-top: 2px; }
   .spot-item .price { color: #4ec9b0; }
   .spot-item .rating { color: #ff6b6b; }
-  .tag-mini { display: inline-block; padding: 1px 4px; border-radius: 2px; font-size: 9px; margin-right: 2px; }
-  .tag-4A { background: rgba(255,107,107,0.15); color: #ff6b6b; }
-  .tag-3A { background: rgba(78,201,176,0.15); color: #4ec9b0; }
-  .tag-2A { background: rgba(139,148,158,0.15); color: #8b949e; }
-  .tag-1A { background: rgba(110,118,129,0.15); color: #6e7681; }
-  .tag-food { background: rgba(240,198,116,0.15); color: #f0c674; }
-  .tag-stay { background: rgba(163,113,247,0.15); color: #a371f7; }
-  .tag-hot { background: rgba(255,123,58,0.15); color: #ff7b3a; }
+  .tag-mini { display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 10px; margin-left: 4px; border: 1px solid transparent; }
+  .tag-4A { background: rgba(255,107,107,0.15); color: #ff6b6b; border-color: rgba(255,107,107,0.35); }
+  .tag-3A { background: rgba(78,201,176,0.15); color: #4ec9b0; border-color: rgba(78,201,176,0.35); }
+  .tag-2A { background: rgba(139,148,158,0.15); color: #8b949e; border-color: rgba(139,148,158,0.35); }
+  .tag-1A { background: rgba(110,118,129,0.15); color: #6e7681; border-color: rgba(110,118,129,0.35); }
+  .tag-food { background: rgba(240,198,116,0.15); color: #f0c674; border-color: rgba(240,198,116,0.35); }
+  .tag-stay { background: rgba(163,113,247,0.15); color: #a371f7; border-color: rgba(163,113,247,0.35); }
+  .tag-hot { background: rgba(255,123,58,0.15); color: #ff7b3a; border-color: rgba(255,123,58,0.35); }
   #map { flex: 1; height: 100%; }
   .leaflet-popup-content { font-size: 12px; line-height: 1.6; color: #c9d1d9; margin: 0; padding: 0; }
   .leaflet-popup-content-wrapper { background: #161b22; color: #c9d1d9; border-radius: 8px; border: 1px solid #30363d; }
@@ -585,45 +585,65 @@ spots.forEach((spot, idx) => {
 
 map.addLayer(clusterGroup);
 
-// ============ 侧栏列表（按县区分组） ============
+// ============ 侧栏列表（按县区合并分组 + 类型标注） ============
+const TYPE_WORD = { scenic: '景点', food: '美食', stay: '住宿', hot: '网红点' };
+const TYPE_ORDER = { scenic: 0, food: 1, stay: 2, hot: 3 };
+
+function tagLabelOf(spot) {
+  const word = TYPE_WORD[spot.type] || '';
+  return (spot.type === 'scenic' && spot.level) ? (word + '·' + spot.level) : word;
+}
+
+function tagClassOf(spot) {
+  if (spot.type === 'scenic' && spot.level) return 'tag-' + spot.level;
+  return 'tag-' + spot.type;
+}
+
 function renderList(filter) {
   const list = document.getElementById('spotList');
   list.innerHTML = '';
   const filtered = filter === 'all' ? spots : spots.filter(s => s.type === filter);
   const countyOrder = ['盐湖区','永济市','河津市','万荣县','芮城县','垣曲县','夏县','新绛县','稷山县','绛县','闻喜县','临猗县','平陆县'];
-  let currentCounty = '';
+
+  // 按县区分组：同县区只出现一个分组头（分组头内含数量），组内按 景点→美食→住宿→网红点 排序
+  const groups = new Map();
   filtered.forEach(spot => {
-    if (spot.county !== currentCounty) {
-      currentCounty = spot.county;
-      const h = document.createElement('div');
-      h.className = 'county-header';
-      h.textContent = '📍 ' + currentCounty;
-      list.appendChild(h);
-    }
-    const color = getMarkerColor(spot);
-    const tagClass = spot.level === '4A' ? 'tag-4A' : (spot.level === '3A' ? 'tag-3A' : (spot.level === '2A' ? 'tag-2A' : (spot.level === '1A' ? 'tag-1A' : ('tag-' + spot.type))));
-    const tagLabel = spot.level || (spot.type === 'food' ? '美食' : spot.type === 'stay' ? '住宿' : spot.type === 'hot' ? '网红' : '');
-    const div = document.createElement('div');
-    div.className = 'spot-item';
-    div.innerHTML =
-      '<div class="name"><span class="dot" style="background:' + color + ';"></span>' + spot.name +
-      ' <span class="tag-mini ' + tagClass + '">' + tagLabel + '</span></div>' +
-      '<div class="meta">' + spot.addr + '</div>' +
-      '<div class="meta">门票：<span class="price">' + spot.price + '</span> | <span class="rating">' + spot.rating + '</span></div>';
-    div.onclick = function() {
-      map.flyTo([spot.lat, spot.lng], 14, { duration: 0.8 });
-      setTimeout(() => {
-        const m = allMarkers.find(m => m.spotData.id === spot.id);
-        if (m) {
-          clusterGroup.zoomToShowLayer(m, () => {
-            m.openPopup();
-          });
-        }
-      }, 500);
-      document.querySelectorAll('.spot-item').forEach(el => el.classList.remove('active'));
-      div.classList.add('active');
-    };
-    list.appendChild(div);
+    if (!groups.has(spot.county)) groups.set(spot.county, []);
+    groups.get(spot.county).push(spot);
+  });
+  const sortedCounties = [...groups.keys()].sort((a, b) => countyOrder.indexOf(a) - countyOrder.indexOf(b));
+
+  sortedCounties.forEach(county => {
+    const items = groups.get(county).sort((a, b) => TYPE_ORDER[a.type] - TYPE_ORDER[b.type]);
+    const h = document.createElement('div');
+    h.className = 'county-header';
+    h.textContent = '📍 ' + county + '（' + items.length + '）';
+    list.appendChild(h);
+
+    items.forEach(spot => {
+      const color = getMarkerColor(spot);
+      const div = document.createElement('div');
+      div.className = 'spot-item';
+      div.innerHTML =
+        '<div class="name"><span class="dot" style="background:' + color + ';"></span>' + spot.name +
+        ' <span class="tag-mini ' + tagClassOf(spot) + '">' + tagLabelOf(spot) + '</span></div>' +
+        '<div class="meta">' + spot.addr + '</div>' +
+        '<div class="meta">门票：<span class="price">' + spot.price + '</span> | <span class="rating">' + spot.rating + '</span></div>';
+      div.onclick = function() {
+        map.flyTo([spot.lat, spot.lng], 14, { duration: 0.8 });
+        setTimeout(() => {
+          const m = allMarkers.find(m => m.spotData.id === spot.id);
+          if (m) {
+            clusterGroup.zoomToShowLayer(m, () => {
+              m.openPopup();
+            });
+          }
+        }, 500);
+        document.querySelectorAll('.spot-item').forEach(el => el.classList.remove('active'));
+        div.classList.add('active');
+      };
+      list.appendChild(div);
+    });
   });
 }
 
