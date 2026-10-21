@@ -37,11 +37,58 @@
   .highlight-row { background: rgba(88,166,255,0.08); }
   .yuncheng-row { border-left: 3px solid #f0c674; }
   footer { text-align: center; color: #6e7681; font-size: 12px; margin-top: 30px; padding: 20px 0; border-top: 1px solid #21262d; }
-  @media (max-width: 768px) { .container { padding: 10px; } table { font-size: 11px; } th, td { padding: 6px 8px; } }
+
+  /* ===== 左侧全国级联选择 ===== */
+  .layout { display: flex; gap: 20px; max-width: 1280px; margin: 0 auto; padding: 20px; align-items: flex-start; }
+  #sidebar { width: 280px; flex-shrink: 0; position: sticky; top: 16px; background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 16px; max-height: calc(100vh - 32px); overflow-y: auto; }
+  #sidebar h2 { font-size: 15px; color: #f0c674; padding-bottom: 8px; border-bottom: 1px solid #30363d; margin-bottom: 4px; }
+  #sidebar .side-note { font-size: 11px; color: #6e7681; margin-top: 10px; line-height: 1.6; }
+  .cascade label { display: block; font-size: 12px; color: #8b949e; margin: 12px 0 4px; }
+  .cascade select { width: 100%; background: #0d1117; border: 1px solid #30363d; color: #c9d1d9; padding: 8px 10px; border-radius: 6px; font-size: 13px; min-height: 38px; cursor: pointer; }
+  .cascade select:focus, #searchInput:focus { outline: 2px solid #58a6ff; outline-offset: 1px; }
+  .cascade select:disabled { opacity: 0.45; cursor: not-allowed; }
+  #resultLine { margin-top: 14px; font-size: 12px; color: #c9d1d9; background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.2); border-radius: 6px; padding: 8px 10px; }
+  #resultLine strong { color: #f0c674; }
+  .reset-btn { margin-top: 10px; width: 100%; background: #21262d; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px; padding: 8px 0; font-size: 12px; cursor: pointer; min-height: 38px; }
+  .reset-btn:hover { background: #2a3542; border-color: #58a6ff; }
+  .reset-btn:focus { outline: 2px solid #58a6ff; outline-offset: 1px; }
+  #main.container { max-width: none; padding: 0; margin: 0; flex: 1; min-width: 0; }
+  #noDataPanel { display: none; background: #161b22; border: 1px dashed #30363d; border-radius: 12px; padding: 48px 24px; text-align: center; }
+  #noDataPanel .big { font-size: 44px; margin-bottom: 12px; }
+  #noDataPanel h3 { color: #f0c674; font-size: 18px; margin-bottom: 8px; }
+  #noDataPanel p { color: #8b949e; font-size: 13px; max-width: 480px; margin: 0 auto; line-height: 1.8; }
+  #noDataPanel .cta { display: inline-block; margin-top: 16px; padding: 8px 18px; border-radius: 6px; background: rgba(240,198,116,0.12); border: 1px solid rgba(240,198,116,0.35); color: #f0c674; text-decoration: none; font-size: 13px; }
+  @media (max-width: 900px) {
+    .layout { flex-direction: column; }
+    #sidebar { position: static; width: 100%; max-height: none; }
+    .container { padding: 10px; } table { font-size: 11px; } th, td { padding: 6px 8px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
 </head>
 <body>
-<div class="container">
+<div class="layout">
+  <aside id="sidebar" aria-label="全国地区级联选择">
+    <h2>📍 全国地区选择</h2>
+    <div class="cascade">
+      <label for="provSel">省份</label>
+      <select id="provSel" onchange="onProvinceChange()" aria-describedby="resultLine">
+        <option value="">全国（不限定）</option>
+      </select>
+      <label for="citySel">城市</label>
+      <select id="citySel" onchange="onCityChange()" disabled>
+        <option value="">请先选择省份</option>
+      </select>
+      <label for="countySel">区 / 县</label>
+      <select id="countySel" onchange="applyCascade()" disabled>
+        <option value="">请先选择城市</option>
+      </select>
+    </div>
+    <div id="resultLine">当前可见 <strong id="resultCount">451</strong> 家景区</div>
+    <button class="reset-btn" type="button" onclick="resetCascade()">重置为全部</button>
+    <p class="side-note">已完整收录：山西省451家A级景区（运城55家全部展开明细）。其他省份选择后显示占位提示，数据陆续补充中。省市区县划分参考开源行政区划库 china-division。</p>
+  </aside>
+  <div class="container" id="main">
   <h1>山西省全域旅游景点总表</h1>
   <p class="subtitle">数据来源：山西省文旅厅《山西省A级旅游景区名录（截至2025.1）》| 全省共451家A级景区</p>
 
@@ -53,23 +100,7 @@
     <div class="summary-card"><div class="num">451</div><div class="label">总计</div></div>
   </div>
 
-  <div class="filter-bar">
-    <label>筛选地市：
-      <select id="cityFilter" onchange="filterCity()">
-        <option value="">全部地市</option>
-        <option value="太原">太原市</option>
-        <option value="大同">大同市</option>
-        <option value="朔州">朔州市</option>
-        <option value="忻州">忻州市</option>
-        <option value="吕梁">吕梁市</option>
-        <option value="晋中">晋中市</option>
-        <option value="阳泉">阳泉市</option>
-        <option value="长治">长治市</option>
-        <option value="晋城">晋城市</option>
-        <option value="临汾">临汾市</option>
-        <option value="运城">运城市</option>
-      </select>
-    </label>
+  <div class="filter-bar" id="filterBar">
     <label>筛选等级：
       <select id="levelFilter" onchange="filterLevel()">
         <option value="">全部等级</option>
@@ -379,70 +410,240 @@
     </tbody></table>
   </div>
 
+  <div id="noDataPanel" role="status">
+    <div class="big">🚧</div>
+    <h3><span class="prov-name"></span> 景区数据整理中</h3>
+    <p>本工具目前已完整收录 <strong style="color:#f0c674;">山西省451家</strong> A级景区（运城55家全部展开明细）。其他省份的景区名录正在陆续整理，敬请期待。</p>
+    <a class="cta" href="#" onclick="resetCascade();return false;">← 回到全国视图</a>
+  </div>
+
   <footer>
     <p>数据截至2025年1月 | 来源：山西省文化和旅游厅《山西省A级旅游景区名录》</p>
     <p>运城市52家景区已全部展开标注（黄色左边框）| 评分与票价信息为携程/同程/美团多平台交叉核实</p>
     <p style="margin-top:8px;color:#f0c674;">>> 重点关注：运城景点地图与食宿攻略请见配套文件</p>
   </footer>
 </div>
+</div>
 
 <script>
+// ============ 全国省市区县级联选择 ============
+const PROVINCES = ['北京市','天津市','河北省','山西省','内蒙古自治区','辽宁省','吉林省','黑龙江省','上海市','江苏省','浙江省','安徽省','福建省','江西省','山东省','河南省','湖北省','湖南省','广东省','广西壮族自治区','海南省','重庆市','四川省','贵州省','云南省','西藏自治区','陕西省','甘肃省','青海省','宁夏回族自治区','新疆维吾尔自治区','香港特别行政区','澳门特别行政区','台湾省'];
+const SHANXI_CITIES = ['太原市','大同市','朔州市','忻州市','吕梁市','晋中市','阳泉市','长治市','晋城市','临汾市','运城市'];
+const YUNCHENG_COUNTIES = ['盐湖区','永济市','河津市','芮城县','临猗县','万荣县','新绛县','稷山县','闻喜县','夏县','平陆县','垣曲县','绛县'];
+
+const provSel = document.getElementById('provSel');
+const citySel = document.getElementById('citySel');
+const countySel = document.getElementById('countySel');
+let divisionData = null;
+let divisionFetchStarted = false;
+
+// 初始化省份下拉
+(function initProvinces() {
+  PROVINCES.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p; opt.textContent = p;
+    provSel.appendChild(opt);
+  });
+})();
+
+// 懒加载全国行政区划数据（china-division 开源库，约500KB，失败自动降级）
+function loadDivision() {
+  if (divisionData || divisionFetchStarted) return;
+  divisionFetchStarted = true;
+  const urls = [
+    'https://unpkg.com/china-division/dist/pca-code.json',
+    'https://cdn.jsdelivr.net/npm/china-division/dist/pca-code.json'
+  ];
+  (async () => {
+    for (const u of urls) {
+      try {
+        const r = await fetch(u);
+        if (r.ok) { divisionData = await r.json(); break; }
+      } catch (e) { /* 尝试下一个源 */ }
+    }
+    if (divisionData && provSel.value) onProvinceChange(); // 数据到位后按当前选中省份刷新
+  })();
+}
+loadDivision();
+
+function findProvince(name) {
+  return divisionData ? divisionData.find(p => p.name === name) : null;
+}
+
+function onProvinceChange() {
+  const prov = provSel.value;
+  countySel.innerHTML = '<option value="">全部区县</option>';
+  countySel.disabled = true;
+  citySel.innerHTML = '';
+  if (!prov) {
+    citySel.innerHTML = '<option value="">请先选择省份</option>';
+    citySel.disabled = true;
+    applyCascade();
+    return;
+  }
+  const node = findProvince(prov);
+  let cities = node ? node.children.map(c => c.name) : null;
+  if (!cities && prov === '山西省') cities = SHANXI_CITIES; // 数据源失败时的降级
+  if (cities) {
+    citySel.disabled = false;
+    citySel.innerHTML = '<option value="">全部城市</option>';
+    cities.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c; opt.textContent = c;
+      citySel.appendChild(opt);
+    });
+  } else {
+    citySel.disabled = true;
+    citySel.innerHTML = '<option value="">行政区划加载中/不可用</option>';
+  }
+  applyCascade();
+}
+
+function onCityChange() {
+  const prov = provSel.value, city = citySel.value;
+  countySel.innerHTML = '<option value="">全部区县</option>';
+  if (!city) { countySel.disabled = true; applyCascade(); return; }
+  const pNode = findProvince(prov);
+  const cNode = pNode && pNode.children.find(c => c.name === city);
+  let counties = cNode && cNode.children ? cNode.children.map(a => a.name) : null;
+  if (!counties && city === '运城市') counties = YUNCHENG_COUNTIES; // 降级
+  if (counties) {
+    countySel.disabled = false;
+    counties.forEach(a => {
+      const opt = document.createElement('option');
+      opt.value = a; opt.textContent = a;
+      countySel.appendChild(opt);
+    });
+  } else {
+    countySel.disabled = true;
+  }
+  applyCascade();
+}
+
+// 区县短名（去掉尾缀）用于模糊匹配景区名称
+function countyShort(county) {
+  const short = county.replace(/(市|县|区|旗|自治县|自治旗)$/, '');
+  return short.length >= 2 ? short : county; // 单字短名（如"绛县"）直接用全名匹配，防误匹配
+}
+
+function rowMatchesCounty(row, county) {
+  return row.textContent.includes(countyShort(county));
+}
+
+function countRows(section) {
+  let n = 0;
+  section.querySelectorAll('tbody tr').forEach(r => { if (r.style.display !== 'none') n++; });
+  return n;
+}
+
+function applyCascade() {
+  const prov = provSel.value, city = citySel.value, county = countySel.value;
+  const sections = document.querySelectorAll('.city-section');
+  const summary = document.querySelector('.summary');
+  const panel = document.getElementById('noDataPanel');
+  const filterBar = document.getElementById('filterBar');
+
+  // 非山西省：显示占位面板
+  if (prov && prov !== '山西省') {
+    sections.forEach(s => s.style.display = 'none');
+    summary.style.display = 'none';
+    if (filterBar) filterBar.style.display = 'none';
+    panel.style.display = 'block';
+    const loc = prov + (city ? ' · ' + city : '') + (county ? ' · ' + county : '');
+    panel.querySelector('.prov-name').textContent = loc;
+    document.getElementById('resultCount').textContent = '0';
+    return;
+  }
+  panel.style.display = 'none';
+  summary.style.display = '';
+  if (filterBar) filterBar.style.display = '';
+
+  let total = 0;
+  sections.forEach(s => {
+    let showSection = true;
+    if (city && (s.dataset.city + '市') !== city && s.dataset.city !== city) showSection = false;
+    if (showSection && county) {
+      let n = 0;
+      s.querySelectorAll('tbody tr').forEach(row => {
+        const show = rowMatchesCounty(row, county);
+        row.style.display = show ? '' : 'none';
+        if (show) n++;
+      });
+      s.style.display = n ? '' : 'none';
+      total += n;
+    } else {
+      s.querySelectorAll('tbody tr').forEach(row => { row.style.display = ''; });
+      s.style.display = showSection ? '' : 'none';
+      if (showSection) total += countRows(s);
+    }
+  });
+  document.getElementById('resultCount').textContent = total;
+}
+
+function resetCascade() {
+  provSel.value = ''; citySel.value = ''; countySel.value = '';
+  citySel.disabled = true;
+  citySel.innerHTML = '<option value="">请先选择省份</option>';
+  countySel.disabled = true;
+  countySel.innerHTML = '<option value="">请先选择城市</option>';
+  document.getElementById('searchInput').value = '';
+  document.getElementById('levelFilter').value = '';
+  document.getElementById('yunCheckbox').checked = false;
+  applyCascade();
+}
+
+// ============ 原有筛选逻辑 ============
 function toggleSection(header) {
   const table = header.nextElementSibling;
   if (table.style.display === 'none') {
     table.style.display = '';
-    header.querySelector('.count').style.display = '';
   } else {
     table.style.display = 'none';
   }
 }
 
-function filterCity() {
-  const city = document.getElementById('cityFilter').value;
-  const sections = document.querySelectorAll('.city-section');
-  sections.forEach(s => {
-    if (!city || s.dataset.city === city) {
-      s.style.display = '';
-    } else {
-      s.style.display = 'none';
-    }
-  });
-}
-
 function filterLevel() {
   const level = document.getElementById('levelFilter').value;
-  const rows = document.querySelectorAll('tbody tr');
-  rows.forEach(row => {
+  document.querySelectorAll('tbody tr').forEach(row => {
     if (!level) { row.style.display = ''; return; }
     const cell = row.cells[2];
-    if (cell && cell.textContent.includes(level)) {
-      row.style.display = '';
-    } else {
-      row.style.display = 'none';
-    }
+    row.style.display = (cell && cell.textContent.includes(level)) ? '' : 'none';
   });
+  if (level) {
+    // 隐藏空置的分区
+    document.querySelectorAll('.city-section').forEach(s => {
+      s.style.display = countRows(s) ? '' : 'none';
+    });
+  } else {
+    applyCascade(); // 清空等级后恢复级联状态
+  }
 }
 
 function searchTable() {
   const term = document.getElementById('searchInput').value.toLowerCase();
-  const rows = document.querySelectorAll('tbody tr');
-  rows.forEach(row => {
+  document.querySelectorAll('tbody tr').forEach(row => {
     if (!term) { row.style.display = ''; return; }
-    const text = row.textContent.toLowerCase();
-    row.style.display = text.includes(term) ? '' : 'none';
+    row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
   });
-  // show all sections when searching
   if (term) {
-    document.querySelectorAll('.city-section').forEach(s => s.style.display = '');
-    document.querySelectorAll('table').forEach(t => t.style.display = '');
+    document.querySelectorAll('.city-section').forEach(s => {
+      s.style.display = countRows(s) ? '' : 'none';
+    });
+  } else {
+    applyCascade();
   }
 }
 
 function filterYun() {
   const checked = document.getElementById('yunCheckbox').checked;
-  document.querySelectorAll('.city-section').forEach(s => {
-    s.style.display = (checked && s.dataset.city !== '运城') ? 'none' : '';
-  });
+  if (checked) {
+    provSel.value = '山西省';
+    onProvinceChange();
+    citySel.value = '运城市';
+    onCityChange();
+  } else {
+    resetCascade();
+  }
 }
 </script>
 </body>
