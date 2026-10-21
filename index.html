@@ -30,6 +30,10 @@
   #statLine { font-size: 11px; color: #8b949e; background: rgba(88,166,255,0.06); border: 1px solid rgba(88,166,255,0.18); border-radius: 6px; padding: 6px 10px; margin: 0 0 10px; }
   #statLine strong { color: #f0c674; }
   .tag-scenic { background: rgba(88,166,255,0.15); color: #58a6ff; border-color: rgba(88,166,255,0.35); }
+  .full-toggle { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #c9a0ff; background: rgba(163,113,247,0.08); border: 1px solid rgba(163,113,247,0.3); border-radius: 6px; padding: 8px 10px; margin-top: 10px; cursor: pointer; user-select: none; }
+  .full-toggle input { width: 16px; height: 16px; accent-color: #a371f7; flex-shrink: 0; }
+  .full-toggle input:disabled { cursor: wait; }
+  .full-toggle small { color: #6e7681; }
   .cascade label { display: block; font-size: 12px; color: #8b949e; margin: 10px 0 4px; }
   .cascade select { width: 100%; background: #0d1117; border: 1px solid #30363d; color: #c9d1d9; padding: 8px 10px; border-radius: 6px; font-size: 13px; min-height: 38px; cursor: pointer; }
   .cascade select:focus { outline: 2px solid #58a6ff; outline-offset: 1px; }
@@ -136,6 +140,7 @@
       <span class="type-btn" onclick="filterType('stay',this)">住宿</span>
       <span class="type-btn" onclick="filterType('hot',this)">网红点</span>
     </div>
+    <label class="full-toggle"><input type="checkbox" id="fullLayerChk" onchange="toggleFullLayer(this.checked)"> 全国5A/4A全量图层 <small>1310家·懒加载</small></label>
     <div id="spotArea"></div>
   </aside>
   <div style="flex:1;position:relative;">
@@ -150,6 +155,7 @@
       <div class="legend-row"><span class="legend-dot" style="background:#f0c674;"></span> 美食/小吃街</div>
       <div class="legend-row"><span class="legend-dot" style="background:#a371f7;"></span> 住宿区域</div>
       <div class="legend-row"><span class="legend-dot" style="background:#ff7b3a;"></span> 网红打卡点</div>
+      <div class="legend-row"><span class="legend-dot" style="background:#c9a0ff;"></span> 全国5A/4A全量（勾选开启）</div>
     </div>
   </div>
 </div>
@@ -988,9 +994,9 @@ function fillCities(cities) {
   renderSpotList();
   showMarkers();
   const span = document.querySelector('#header h1 span');
-  if (span) span.textContent = '· 全国' + spots.length + '个点位已上图';
+  if (span) span.textContent = '· 全国' + spots.length + '个精选点位 + 1310家5A/4A全量图层';
   const stat = document.getElementById('statLine');
-  if (stat) stat.innerHTML = '已收录全国 <strong>' + spots.length + '</strong> 个点位 · 山西451家A级全量';
+  if (stat) stat.innerHTML = '文旅部公报：全国A级景区<strong>16994</strong>个（2025年末）· 本站精选<strong>' + spots.length + '</strong>个点位 · 5A/4A全量<strong>1310</strong>家图层可开启';
 })();
 
 // 懒加载全国行政区划（china-division开源库，双CDN源，失败自动降级内置数据）
@@ -1089,6 +1095,70 @@ function showToast(prov) {
   t.style.display = 'block';
 }
 function hideToast() { document.getElementById('toast').style.display = 'none'; }
+
+// ============ 全国5A/4A全量图层（懒加载 data/national.json，1310家官方评定） ============
+let fullCluster = null; let fullLoading = false;
+function wgs2gcj(lat, lng) { // WGS-84 → GCJ-02（高德瓦片坐标系，避免地标偏移）
+  const a = 6378245.0, ee = 0.00669342162296594323;
+  function tLat(x, y) {
+    let r = -100 + 2 * x + 3 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+    r += (20 * Math.sin(6 * x * Math.PI) + 20 * Math.sin(2 * x * Math.PI)) * 2 / 3;
+    r += (20 * Math.sin(y * Math.PI) + 40 * Math.sin(y / 3 * Math.PI)) * 2 / 3;
+    r += (160 * Math.sin(y / 12 * Math.PI) + 320 * Math.sin(y * Math.PI / 30)) * 2 / 3;
+    return r;
+  }
+  function tLng(x, y) {
+    let r = 300 + x + 2 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+    r += (20 * Math.sin(6 * x * Math.PI) + 20 * Math.sin(2 * x * Math.PI)) * 2 / 3;
+    r += (20 * Math.sin(x * Math.PI) + 40 * Math.sin(x / 3 * Math.PI)) * 2 / 3;
+    r += (150 * Math.sin(x / 12 * Math.PI) + 300 * Math.sin(x / 30 * Math.PI)) * 2 / 3;
+    return r;
+  }
+  let dLat = tLat(lng - 105, lat - 35), dLng = tLng(lng - 105, lat - 35);
+  const radLat = lat / 180 * Math.PI; let magic = Math.sin(radLat);
+  magic = 1 - ee * magic * magic; const sq = Math.sqrt(magic);
+  dLat = (dLat * 180) / ((a * (1 - ee)) / (magic * sq) * Math.PI);
+  dLng = (dLng * 180) / (a / sq * Math.cos(radLat) * Math.PI);
+  return [lat + dLat, lng + dLng];
+}
+
+async function toggleFullLayer(on) {
+  const chk = document.getElementById('fullLayerChk');
+  if (on && !fullCluster && !fullLoading) {
+    fullLoading = true; chk.disabled = true;
+    try {
+      const r = await fetch('data/national.json');
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const list = await r.json();
+      fullCluster = L.markerClusterGroup({
+        showCoverageOnHover: false, maxClusterRadius: 60,
+        iconCreateFunction: function(c) {
+          const n = c.getChildCount();
+          return L.divIcon({ html: '<div style="background:rgba(163,113,247,0.85);color:#fff;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold;border:2px solid rgba(255,255,255,0.5);">' + n + '</div>', className: 'cluster-icon', iconSize: [36, 36] });
+        }
+      });
+      list.forEach(s => {
+        const m = L.circleMarker(wgs2gcj(s.lat, s.lng), {
+          radius: 5, color: '#a371f7', weight: 1, fillColor: '#c9a0ff', fillOpacity: 0.9
+        });
+        m.bindPopup('<div style="min-width:220px;padding:6px 2px;">' +
+          '<div class="iw-title">' + s.n + '</div>' +
+          '<span class="iw-tag">' + s.l + '</span> <span class="iw-tag">' + s.p + '</span>' +
+          '<div style="margin-top:4px;">门票：<span class="iw-price">' + s.t + '</span></div>' +
+          '<div class="iw-addr">数据来源：China Top Attractions 公开数据集（2026-08核验）· 坐标已转GCJ-02</div></div>', { maxWidth: 300 });
+        fullCluster.addLayer(m);
+      });
+      map.addLayer(fullCluster);
+    } catch (e) {
+      chk.checked = false;
+      const t = document.getElementById('toast');
+      t.innerHTML = '<strong>全量图层加载失败</strong><br>请检查网络后重新勾选重试。';
+      t.style.display = 'block';
+    }
+    fullLoading = false; chk.disabled = false;
+  }
+  if (fullCluster) { if (on) map.addLayer(fullCluster); else map.removeLayer(fullCluster); }
+}
 
 // ============ 类型筛选 ============
 function filterType(type, el) {
