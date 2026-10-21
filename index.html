@@ -73,11 +73,34 @@
   .leaflet-control-attribution a { color: #8b949e !important; }
   .leaflet-bar a { background: #161b22 !important; color: #c9d1d9 !important; border-color: #30363d !important; }
   .leaflet-bar a:hover { background: #21262d !important; }
+  /* ===== 移动端：全屏地图 + 底部抽屉侧栏 ===== */
   @media (max-width: 860px) {
+    #header h1 { font-size: 13px; }
     #layout { flex-direction: column; }
-    #sidebar { width: 100%; max-height: 45vh; border-right: none; border-bottom: 1px solid #30363d; }
-    #toast { left: 16px; }
+    #sidebar {
+      position: fixed; left: 0; right: 0; bottom: 0; width: 100%; max-height: 72vh;
+      border-right: none; border-top: 1px solid #30363d; border-radius: 14px 14px 0 0;
+      z-index: 1100; transform: translateY(105%); transition: transform .25s ease;
+      box-shadow: 0 -8px 24px rgba(0,0,0,0.5); padding-bottom: env(safe-area-inset-bottom);
+    }
+    #sidebar.open { transform: translateY(0); }
+    .side-head { display: flex; align-items: center; justify-content: space-between; margin: -4px 0 6px; }
+    .side-head .handle { width: 44px; height: 4px; border-radius: 2px; background: #30363d; display: block; }
+    .side-close { background: #21262d; border: 1px solid #30363d; color: #c9d1d9; border-radius: 999px; padding: 6px 14px; font-size: 12px; cursor: pointer; min-height: 36px; }
+    #sideToggle { display: none; }
+    #sideToggle {
+      display: flex; align-items: center; justify-content: center; position: fixed;
+      bottom: calc(18px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%);
+      z-index: 1050; background: #f0c674; color: #0d1117; border: none; border-radius: 999px;
+      padding: 0 28px; font-size: 14px; font-weight: bold; cursor: pointer;
+      min-height: 46px; box-shadow: 0 4px 14px rgba(0,0,0,0.55);
+    }
+    #sideToggle:active { background: #ffd98a; }
+    #toast { left: 12px; right: 12px; top: 60px; max-width: none; }
+    .cascade select { min-height: 44px; font-size: 16px; } /* 16px防iOS聚焦自动放大 */
+    .type-btn { min-height: 38px; padding: 8px 14px; font-size: 12px; }
   }
+  @media (min-width: 861px) { .side-head { display: none; } }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
 </head>
@@ -92,6 +115,7 @@
 </div>
 <div id="layout">
   <aside id="sidebar">
+    <div class="side-head"><span class="handle"></span><button type="button" class="side-close" onclick="closeSidebar()">收起 ✕</button></div>
     <h2>📍 按地区选择</h2>
     <div class="cascade">
       <label for="provSel">省份</label>
@@ -112,6 +136,7 @@
   </aside>
   <div style="flex:1;position:relative;">
     <div id="map"></div>
+    <button id="sideToggle" type="button" onclick="toggleSidebar()">📍 地区 / 景区列表</button>
     <div id="toast" role="status"></div>
     <div id="legend">
       <h3>图例</h3>
@@ -783,6 +808,14 @@ function goShanxi() {
   onProvinceChange();
 }
 
+// ===== 移动端抽屉 =====
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+}
+
 function showToast(prov) {
   const t = document.getElementById('toast');
   t.innerHTML = '<strong>' + prov + '</strong> 景区数据整理中。<br>山西省451家A级景区名录已全量收录上图（运城55家另含美食/住宿/网红点明细，其他地市为市县级近似坐标）。<br>' +
@@ -859,6 +892,7 @@ function renderSpotList() {
         '<div class="meta">门票：<span class="price">' + spot.price + '</span> | <span class="rating">' + spot.rating + '</span></div>';
       div.onclick = function() {
         map.flyTo([spot.lat, spot.lng], 14, { duration: 0.8 });
+        if (window.innerWidth <= 860) closeSidebar(); // 手机上点景区自动收起抽屉看地图
         setTimeout(() => {
           const m = allMarkers.find(m => m.spotData.id === spot.id);
           if (m) clusterGroup.zoomToShowLayer(m, () => m.openPopup());
