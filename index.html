@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>山西 · 运城全域旅游攻略 | lovesummer.me</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; background: #0d1117; color: #c9d1d9; font-family: "Microsoft YaHei", "PingFang SC", sans-serif; }
+  body { display: flex; flex-direction: column; }
+  .hero {
+    text-align: center; padding: 70px 20px 40px;
+    background: linear-gradient(180deg, rgba(88,166,255,0.08), rgba(13,17,23,0));
+  }
+  .hero h1 { font-size: 34px; color: #f0c674; letter-spacing: 2px; margin-bottom: 14px; }
+  .hero p { color: #8b949e; font-size: 15px; line-height: 1.8; max-width: 640px; margin: 0 auto; }
+  .hero .badges { margin-top: 18px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .badge { display: inline-block; padding: 4px 14px; border-radius: 20px; font-size: 12px; border: 1px solid #30363d; color: #58a6ff; background: rgba(88,166,255,0.08); }
+  .cards {
+    flex: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 22px; padding: 30px 8% 60px; align-content: start; max-width: 1200px; width: 100%; margin: 0 auto;
+  }
+  .card {
+    background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 26px 24px;
+    text-decoration: none; color: #c9d1d9; transition: transform .2s, border-color .2s; display: flex; flex-direction: column; gap: 10px;
+  }
+  .card:hover { transform: translateY(-4px); border-color: #58a6ff; }
+  .card .icon { font-size: 34px; }
+  .card h2 { font-size: 18px; color: #58a6ff; }
+  .card p { font-size: 13px; color: #8b949e; line-height: 1.7; flex: 1; }
+  .card .go { font-size: 13px; color: #f0c674; }
+  .card.main { border-color: #f0c674; background: linear-gradient(180deg, rgba(240,198,116,0.06), #161b22); }
+  footer { text-align: center; padding: 18px; font-size: 12px; color: #6e7681; border-top: 1px solid #21262d; }
+  footer a { color: #8b949e; text-decoration: none; }
+</style>
+</head>
+<body>
+  <div class="hero">
+    <h1>山西 · 运城全域旅游攻略</h1>
+    <p>山西省451家A级景区总览 · 运城55家A级景区地图标注 · 食宿网红点全攻略<br>数据来源：运城市文旅局 / 山西省文旅厅 / 携程 / 同程（2025-2026）</p>
+    <div class="badges">
+      <span class="badge">4A×24</span>
+      <span class="badge">3A×19</span>
+      <span class="badge">2A×9</span>
+      <span class="badge">1A×1</span>
+      <span class="badge">70个地图点位</span>
+    </div>
+  </div>
+  <div class="cards">
+    <a class="card main" href="map.html">
+      <div class="icon">🗺️</div>
+      <h2>运城景点地图标注（核心）</h2>
+      <p>运城55家A级景区全量上地图，覆盖13个县（市、区），加美食街、住宿圈、网红打卡点共70个点位。每点含门票、评分、真人评价与高德导航。标准/卫星图切换、聚合缩放、分类筛选。</p>
+      <div class="go">进入地图 →</div>
+    </a>
+    <a class="card" href="shanxi.html">
+      <div class="icon">📋</div>
+      <h2>山西省全域景点总表</h2>
+      <p>全省451家A级景区按11个地市分组，支持按地市、景区等级、关键词筛选。出行山西前先看这张总表。</p>
+      <div class="go">查看总表 →</div>
+    </a>
+    <a class="card" href="guide.html">
+      <div class="icon">🍜</div>
+      <h2>运城食宿攻略</h2>
+      <p>住宿3圈7家酒店对比、5条小吃街详解、10道特色美食、14个网红打卡点。解决"住哪、吃啥、拍什么"。</p>
+      <div class="go">查看攻略 →</div>
+    </a>
+  </div>
+  <footer>
+    纯静态 · 免Key · <a href="https://github.com/13121349269/travel" target="_blank">GitHub 开源</a> | Leaflet.js + 高德地图瓦片（GCJ-02） | lovesummer.me
+  </footer>
+</body>
+</html>
