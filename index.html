@@ -23,12 +23,10 @@
   .type-bar { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 12px; }
   .type-btn { padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; border: 1px solid #30363d; background: #0d1117; color: #8b949e; min-height: 26px; }
   .type-btn.active { background: #58a6ff; color: #fff; border-color: #58a6ff; }
-  #provList { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
-  .prov-btn { padding: 7px 8px; border-radius: 5px; font-size: 12px; cursor: pointer; border: 1px solid #21262d; background: #0d1117; color: #c9d1d9; text-align: left; min-height: 32px; display: flex; justify-content: space-between; align-items: center; gap: 4px; }
-  .prov-btn small { color: #6e7681; font-size: 9px; flex-shrink: 0; }
-  .prov-btn:hover { border-color: #58a6ff; }
-  .prov-btn.active { background: rgba(88,166,255,0.15); border-color: #58a6ff; color: #fff; }
-  .prov-btn .has { color: #4ec9b0; }
+  .cascade label { display: block; font-size: 12px; color: #8b949e; margin: 10px 0 4px; }
+  .cascade select { width: 100%; background: #0d1117; border: 1px solid #30363d; color: #c9d1d9; padding: 8px 10px; border-radius: 6px; font-size: 13px; min-height: 38px; cursor: pointer; }
+  .cascade select:focus { outline: 2px solid #58a6ff; outline-offset: 1px; }
+  .cascade select:disabled { opacity: 0.45; cursor: not-allowed; }
   #spotArea { margin-top: 12px; border-top: 1px solid #30363d; padding-top: 8px; flex: 1; }
   #spotArea .county-header { font-size: 11px; color: #58a6ff; margin: 8px 0 4px; padding: 4px 8px; background: rgba(88,166,255,0.08); border-radius: 4px; border-left: 3px solid #58a6ff; font-weight: bold; }
   #spotArea .spot-item { background: #0d1117; border: 1px solid #21262d; border-radius: 6px; padding: 7px 9px; margin-bottom: 4px; cursor: pointer; }
@@ -74,7 +72,6 @@
   @media (max-width: 860px) {
     #layout { flex-direction: column; }
     #sidebar { width: 100%; max-height: 45vh; border-right: none; border-bottom: 1px solid #30363d; }
-    #provList { grid-template-columns: repeat(4, 1fr); }
     #toast { left: 16px; }
   }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
@@ -100,7 +97,14 @@
       <span class="type-btn" onclick="filterType('stay',this)">住宿</span>
       <span class="type-btn" onclick="filterType('hot',this)">网红点</span>
     </div>
-    <div id="provList"></div>
+    <div class="cascade">
+      <label for="provSel">省份</label>
+      <select id="provSel" onchange="onProvinceChange()"><option value="">全国（不限）</option></select>
+      <label for="citySel">城市</label>
+      <select id="citySel" onchange="onCityChange()" disabled><option value="">请先选择省份</option></select>
+      <label for="countySel">区 / 县</label>
+      <select id="countySel" onchange="onCountyChange()" disabled><option value="">请先选择城市</option></select>
+    </div>
     <div id="spotArea"></div>
   </aside>
   <div style="flex:1;position:relative;">
@@ -466,50 +470,131 @@ spots.forEach((spot, idx) => {
 allMarkers.forEach(m => clusterGroup.addLayer(m));
 map.addLayer(clusterGroup);
 
-// ============ 左侧：省份列表 ============
+// ============ 左侧：省-市-区县级联 ============
+const SHANXI_CITIES = ['太原市','大同市','朔州市','忻州市','吕梁市','晋中市','阳泉市','长治市','晋城市','临汾市','运城市'];
+const YUNCHENG_COUNTIES = ['盐湖区','永济市','河津市','芮城县','临猗县','万荣县','新绛县','稷山县','闻喜县','夏县','平陆县','垣曲县','绛县'];
 const TYPE_WORD = { scenic: '景点', food: '美食', stay: '住宿', hot: '网红点' };
 const TYPE_ORDER = { scenic: 0, food: 1, stay: 2, hot: 3 };
 let currentType = 'all';
 let currentProv = '山西省';
+let currentCity = '';
+let currentCounty = '';
 
-const provListEl = document.getElementById('provList');
-PROVINCES.forEach(([name]) => {
-  const btn = document.createElement('button');
-  btn.type = 'button';
-  btn.className = 'prov-btn' + (name === '山西省' ? ' active' : '');
-  if (name === '山西省') btn.id = 'provShanxi';
-  btn.innerHTML = '<span>' + name + '</span>' + (name === '山西省' ? '<small class="has">已收录55家</small>' : '<small>整理中</small>');
-  btn.onclick = function() { selectProvince(name, btn); };
-  provListEl.appendChild(btn);
-});
+const provSel = document.getElementById('provSel');
+const citySel = document.getElementById('citySel');
+const countySel = document.getElementById('countySel');
+let divisionData = null;
+let divisionFetchStarted = false;
 
-function selectProvince(name, btn) {
-  currentProv = name;
-  document.querySelectorAll('.prov-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  const center = PROVINCES.find(p => p[0] === name);
-  if (name === '山西省') {
-    hideToast();
-    renderSpotList();
-    showMarkers();
-    map.flyTo([35.02, 110.85], 9, { duration: 0.8 });
-  } else {
-    hideToast();
-    clusterGroup.clearLayers();
-    document.getElementById('spotArea').innerHTML =
-      '<div style="padding:16px 8px;text-align:center;color:#8b949e;font-size:12px;line-height:1.8;">' +
-      '<div style="font-size:26px;">🚧</div>' + name + ' 景区数据整理中<br>' +
-      '目前已收录 <strong style="color:#f0c674;">山西省451家</strong> A级景区<br>' +
-      '<a href="shanxi.html" style="color:#58a6ff;">查看总表 →</a></div>';
-    if (center) map.flyTo([center[1], center[2]], 6, { duration: 1.2 });
-    showToast(name);
+function countyShort(name) {
+  const short = name.replace(/(市|县|区|旗|自治县|自治旗)$/, '');
+  return short.length >= 2 ? short : name; // 单字短名（如"绛县"）用全名匹配防误判
+}
+
+function fillCities(cities) {
+  citySel.innerHTML = '<option value="">全部城市</option>';
+  cities.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c; opt.textContent = c;
+    citySel.appendChild(opt);
+  });
+  citySel.disabled = false;
+}
+
+(function initProvinces() {
+  PROVINCES.forEach(([name]) => {
+    const opt = document.createElement('option');
+    opt.value = name; opt.textContent = name;
+    provSel.appendChild(opt);
+  });
+  provSel.value = '山西省';
+  fillCities(SHANXI_CITIES); // 先用内置数据，division加载完成后自动刷新
+})();
+
+// 懒加载全国行政区划（china-division开源库，双CDN源，失败自动降级内置数据）
+function loadDivision() {
+  if (divisionData || divisionFetchStarted) return;
+  divisionFetchStarted = true;
+  const urls = [
+    'https://unpkg.com/china-division/dist/pca-code.json',
+    'https://cdn.jsdelivr.net/npm/china-division/dist/pca-code.json'
+  ];
+  (async () => {
+    for (const u of urls) {
+      try { const r = await fetch(u); if (r.ok) { divisionData = await r.json(); break; } } catch (e) { /* 换下一个源 */ }
+    }
+    if (divisionData && provSel.value) onProvinceChange(false);
+  })();
+}
+loadDivision();
+
+function findProvince(name) {
+  return divisionData ? divisionData.find(p => p.name === name) : null;
+}
+
+function onProvinceChange(fly) {
+  currentProv = provSel.value;
+  currentCity = ''; currentCounty = '';
+  countySel.innerHTML = '<option value="">全部区县</option>';
+  countySel.disabled = true;
+  citySel.innerHTML = '';
+  hideToast();
+  if (!currentProv) { // 全国（不限）
+    citySel.disabled = true;
+    citySel.innerHTML = '<option value="">请先选择省份</option>';
+    renderSpotList(); showMarkers();
+    map.flyTo([35.02, 110.85], 5, { duration: 1 });
+    return;
   }
+  const node = findProvince(currentProv);
+  const cities = node ? node.children.map(c => c.name) : (currentProv === '山西省' ? SHANXI_CITIES : null);
+  if (cities) fillCities(cities);
+  else { citySel.disabled = true; citySel.innerHTML = '<option value="">行政区划加载中</option>'; }
+  renderSpotList(); showMarkers();
+  if (currentProv === '山西省') {
+    if (fly !== false) map.flyTo([35.02, 110.85], 9, { duration: 0.8 });
+  } else {
+    const c = PROVINCES.find(p => p[0] === currentProv);
+    if (c) map.flyTo([c[1], c[2]], 6, { duration: 1.2 });
+    showToast(currentProv);
+  }
+}
+
+function onCityChange() {
+  currentCity = citySel.value;
+  currentCounty = '';
+  countySel.innerHTML = '<option value="">全部区县</option>';
+  if (!currentCity) { countySel.disabled = true; renderSpotList(); showMarkers(); return; }
+  const pNode = findProvince(currentProv);
+  const cNode = pNode ? pNode.children.find(c => c.name === currentCity) : null;
+  const counties = (cNode && cNode.children) ? cNode.children.map(a => a.name) : (currentCity === '运城市' ? YUNCHENG_COUNTIES : null);
+  if (counties) {
+    counties.forEach(a => {
+      const opt = document.createElement('option');
+      opt.value = a; opt.textContent = a;
+      countySel.appendChild(opt);
+    });
+    countySel.disabled = false;
+  } else {
+    countySel.disabled = true;
+  }
+  renderSpotList(); showMarkers();
+}
+
+function onCountyChange() {
+  currentCounty = countySel.value;
+  renderSpotList(); showMarkers();
+}
+
+function goShanxi() {
+  provSel.value = '山西省';
+  onProvinceChange();
 }
 
 function showToast(prov) {
   const t = document.getElementById('toast');
   t.innerHTML = '<strong>' + prov + '</strong> 的景区数据正在整理中。<br>当前已完整收录山西省451家A级景区（运城55家全部展开）。<br>' +
-    '<button type="button" onclick="selectProvince(\'山西省\', document.getElementById(\'provShanxi\'))">去山西看看 →</button>';
+    '<button type="button" onclick="goShanxi()">去山西看看 →</button>';
   t.style.display = 'block';
 }
 function hideToast() { document.getElementById('toast').style.display = 'none'; }
@@ -519,13 +604,18 @@ function filterType(type, el) {
   currentType = type;
   document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
-  if (currentProv === '山西省') { renderSpotList(); showMarkers(); }
+  renderSpotList(); showMarkers();
 }
 
 function showMarkers() {
   clusterGroup.clearLayers();
-  allMarkers.filter(m => currentType === 'all' || m.spotData.type === currentType)
-    .forEach(m => clusterGroup.addLayer(m));
+  if (currentProv && currentProv !== '山西省') return; // 非山西省：不放标记
+  if (currentCity && currentCity !== '运城市') return; // 山西省内非运城：暂无明细
+  allMarkers.filter(m => {
+    if (currentType !== 'all' && m.spotData.type !== currentType) return false;
+    if (currentCounty && countyShort(m.spotData.county) !== countyShort(currentCounty)) return false;
+    return true;
+  }).forEach(m => clusterGroup.addLayer(m));
 }
 
 // ============ 山西省景点列表（按县区分组+类型标注） ============
@@ -541,7 +631,23 @@ function tagClassOf(spot) {
 function renderSpotList() {
   const area = document.getElementById('spotArea');
   area.innerHTML = '';
-  const filtered = currentType === 'all' ? spots : spots.filter(s => s.type === currentType);
+  const placeholder = (html) => {
+    area.innerHTML = '<div style="padding:16px 8px;text-align:center;color:#8b949e;font-size:12px;line-height:1.8;">' + html + '</div>';
+  };
+  if (currentProv && currentProv !== '山西省') {
+    placeholder('<div style="font-size:26px;">🚧</div>' + currentProv + ' 景区数据整理中<br>' +
+      '目前已收录 <strong style="color:#f0c674;">山西省451家</strong> A级景区<br>' +
+      '<a href="shanxi.html" style="color:#58a6ff;">查看总表 →</a>');
+    return;
+  }
+  if (currentCity && currentCity !== '运城市') {
+    placeholder('<div style="font-size:26px;">🚧</div>' + currentCity + ' 景区明细整理中<br>' +
+      '<a href="shanxi.html" style="color:#58a6ff;">查看全省总表 →</a>');
+    return;
+  }
+  const filtered = (currentType === 'all' ? spots : spots.filter(s => s.type === currentType))
+    .filter(s => !currentCounty || countyShort(s.county) === countyShort(currentCounty));
+  if (!filtered.length) { placeholder('该区县暂无收录明细'); return; }
   const countyOrder = ['盐湖区','永济市','河津市','万荣县','芮城县','垣曲县','夏县','新绛县','稷山县','绛县','闻喜县','临猗县','平陆县'];
   const groups = new Map();
   filtered.forEach(spot => {
