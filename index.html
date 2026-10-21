@@ -3,71 +3,581 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>山西 · 运城全域旅游攻略 | lovesummer.me</title>
+<title>全国旅游攻略 | lovesummer.me</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; background: #0d1117; color: #c9d1d9; font-family: "Microsoft YaHei", "PingFang SC", sans-serif; }
-  body { display: flex; flex-direction: column; }
-  .hero {
-    text-align: center; padding: 70px 20px 40px;
-    background: linear-gradient(180deg, rgba(88,166,255,0.08), rgba(13,17,23,0));
+  #header { background: #161b22; border-bottom: 1px solid #30363d; padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; height: 52px; gap: 12px; }
+  #header h1 { font-size: 16px; color: #f0c674; white-space: nowrap; }
+  #header h1 span { color: #58a6ff; }
+  #header nav { display: flex; gap: 8px; flex-wrap: wrap; }
+  #header nav a { color: #8b949e; text-decoration: none; font-size: 12px; padding: 5px 12px; border: 1px solid #30363d; border-radius: 6px; min-height: 28px; display: inline-flex; align-items: center; }
+  #header nav a:hover { color: #58a6ff; border-color: #58a6ff; }
+  #header nav a:focus-visible { outline: 2px solid #58a6ff; outline-offset: 1px; }
+  #layout { display: flex; height: calc(100vh - 52px); }
+  #sidebar { width: 300px; background: #161b22; border-right: 1px solid #30363d; overflow-y: auto; padding: 12px; flex-shrink: 0; display: flex; flex-direction: column; }
+  #sidebar h2 { font-size: 14px; color: #f0c674; margin-bottom: 8px; }
+  .type-bar { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 12px; }
+  .type-btn { padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; border: 1px solid #30363d; background: #0d1117; color: #8b949e; min-height: 26px; }
+  .type-btn.active { background: #58a6ff; color: #fff; border-color: #58a6ff; }
+  #provList { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
+  .prov-btn { padding: 7px 8px; border-radius: 5px; font-size: 12px; cursor: pointer; border: 1px solid #21262d; background: #0d1117; color: #c9d1d9; text-align: left; min-height: 32px; display: flex; justify-content: space-between; align-items: center; gap: 4px; }
+  .prov-btn small { color: #6e7681; font-size: 9px; flex-shrink: 0; }
+  .prov-btn:hover { border-color: #58a6ff; }
+  .prov-btn.active { background: rgba(88,166,255,0.15); border-color: #58a6ff; color: #fff; }
+  .prov-btn .has { color: #4ec9b0; }
+  #spotArea { margin-top: 12px; border-top: 1px solid #30363d; padding-top: 8px; flex: 1; }
+  #spotArea .county-header { font-size: 11px; color: #58a6ff; margin: 8px 0 4px; padding: 4px 8px; background: rgba(88,166,255,0.08); border-radius: 4px; border-left: 3px solid #58a6ff; font-weight: bold; }
+  #spotArea .spot-item { background: #0d1117; border: 1px solid #21262d; border-radius: 6px; padding: 7px 9px; margin-bottom: 4px; cursor: pointer; }
+  #spotArea .spot-item:hover { border-color: #58a6ff; }
+  #spotArea .spot-item.active { border-color: #f0c674; background: rgba(240,198,116,0.08); }
+  #spotArea .name { font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 5px; }
+  #spotArea .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  #spotArea .meta { font-size: 10px; color: #8b949e; margin-top: 2px; }
+  #spotArea .price { color: #4ec9b0; }
+  #spotArea .rating { color: #ff6b6b; }
+  .tag-mini { display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 10px; margin-left: 4px; border: 1px solid transparent; }
+  .tag-4A { background: rgba(255,107,107,0.15); color: #ff6b6b; border-color: rgba(255,107,107,0.35); }
+  .tag-3A { background: rgba(78,201,176,0.15); color: #4ec9b0; border-color: rgba(78,201,176,0.35); }
+  .tag-2A { background: rgba(139,148,158,0.15); color: #8b949e; border-color: rgba(139,148,158,0.35); }
+  .tag-1A { background: rgba(110,118,129,0.15); color: #6e7681; border-color: rgba(110,118,129,0.35); }
+  .tag-food { background: rgba(240,198,116,0.15); color: #f0c674; border-color: rgba(240,198,116,0.35); }
+  .tag-stay { background: rgba(163,113,247,0.15); color: #a371f7; border-color: rgba(163,113,247,0.35); }
+  .tag-hot { background: rgba(255,123,58,0.15); color: #ff7b3a; border-color: rgba(255,123,58,0.35); }
+  #map { flex: 1; height: 100%; }
+  #toast { position: absolute; top: 68px; left: 316px; z-index: 1200; display: none; max-width: 320px; background: rgba(22,27,34,0.96); border: 1px solid #f0c674; border-radius: 8px; padding: 12px 16px; font-size: 12px; color: #c9d1d9; line-height: 1.7; box-shadow: 0 4px 16px rgba(0,0,0,0.5); }
+  #toast strong { color: #f0c674; }
+  #toast button { margin-top: 6px; background: #21262d; border: 1px solid #30363d; color: #c9d1d9; border-radius: 4px; padding: 3px 10px; font-size: 11px; cursor: pointer; }
+  #legend { position: absolute; bottom: 20px; right: 20px; background: rgba(22,27,34,0.95); border: 1px solid #30363d; border-radius: 8px; padding: 10px 14px; font-size: 11px; z-index: 1000; }
+  #legend h3 { color: #f0c674; font-size: 12px; margin: 0 0 6px; }
+  .legend-row { display: flex; align-items: center; gap: 6px; margin: 3px 0; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .leaflet-popup-content { font-size: 12px; line-height: 1.6; color: #c9d1d9; margin: 0; padding: 0; }
+  .leaflet-popup-content-wrapper { background: #161b22; color: #c9d1d9; border-radius: 8px; border: 1px solid #30363d; }
+  .leaflet-popup-tip { background: #161b22; }
+  .iw-title { font-size: 14px; font-weight: bold; color: #f0c674; margin-bottom: 3px; }
+  .iw-price { color: #4ec9b0; font-weight: bold; }
+  .iw-rating { color: #ff6b6b; }
+  .iw-addr { color: #8b949e; font-size: 11px; }
+  .iw-review { color: #c9d1d9; font-size: 11px; margin-top: 5px; border-top: 1px solid #21262d; padding-top: 5px; max-height: 180px; overflow-y: auto; }
+  .iw-tag { display: inline-block; background: rgba(88,166,255,0.12); color: #58a6ff; padding: 1px 5px; border-radius: 3px; font-size: 10px; margin: 1px; }
+  .iw-nav { margin-top: 6px; display: flex; gap: 6px; }
+  .iw-nav a { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; text-decoration: none; }
+  .iw-nav .amap-link { background: rgba(78,201,176,0.15); color: #4ec9b0; border: 1px solid rgba(78,201,176,0.3); }
+  .leaflet-control-attribution { background: rgba(22,27,34,0.8) !important; color: #6e7681 !important; font-size: 10px !important; }
+  .leaflet-control-attribution a { color: #8b949e !important; }
+  .leaflet-bar a { background: #161b22 !important; color: #c9d1d9 !important; border-color: #30363d !important; }
+  .leaflet-bar a:hover { background: #21262d !important; }
+  @media (max-width: 860px) {
+    #layout { flex-direction: column; }
+    #sidebar { width: 100%; max-height: 45vh; border-right: none; border-bottom: 1px solid #30363d; }
+    #provList { grid-template-columns: repeat(4, 1fr); }
+    #toast { left: 16px; }
   }
-  .hero h1 { font-size: 34px; color: #f0c674; letter-spacing: 2px; margin-bottom: 14px; }
-  .hero p { color: #8b949e; font-size: 15px; line-height: 1.8; max-width: 640px; margin: 0 auto; }
-  .hero .badges { margin-top: 18px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-  .badge { display: inline-block; padding: 4px 14px; border-radius: 20px; font-size: 12px; border: 1px solid #30363d; color: #58a6ff; background: rgba(88,166,255,0.08); }
-  .cards {
-    flex: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 22px; padding: 30px 8% 60px; align-content: start; max-width: 1200px; width: 100%; margin: 0 auto;
-  }
-  .card {
-    background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 26px 24px;
-    text-decoration: none; color: #c9d1d9; transition: transform .2s, border-color .2s; display: flex; flex-direction: column; gap: 10px;
-  }
-  .card:hover { transform: translateY(-4px); border-color: #58a6ff; }
-  .card .icon { font-size: 34px; }
-  .card h2 { font-size: 18px; color: #58a6ff; }
-  .card p { font-size: 13px; color: #8b949e; line-height: 1.7; flex: 1; }
-  .card .go { font-size: 13px; color: #f0c674; }
-  .card.main { border-color: #f0c674; background: linear-gradient(180deg, rgba(240,198,116,0.06), #161b22); }
-  footer { text-align: center; padding: 18px; font-size: 12px; color: #6e7681; border-top: 1px solid #21262d; }
-  footer a { color: #8b949e; text-decoration: none; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
 </head>
 <body>
-  <div class="hero">
-    <h1>山西 · 运城全域旅游攻略</h1>
-    <p>山西省451家A级景区总览 · 运城55家A级景区地图标注 · 食宿网红点全攻略<br>数据来源：运城市文旅局 / 山西省文旅厅 / 携程 / 同程（2025-2026）</p>
-    <div class="badges">
-      <span class="badge">4A×24</span>
-      <span class="badge">3A×19</span>
-      <span class="badge">2A×9</span>
-      <span class="badge">1A×1</span>
-      <span class="badge">70个地图点位</span>
+<div id="header">
+  <h1>🧭 全国旅游攻略 <span>· 山西运城已收录</span></h1>
+  <nav>
+    <a href="shanxi.html">📋 景区总表</a>
+    <a href="map.html">🗺️ 运城详图</a>
+    <a href="guide.html">🍜 食宿攻略</a>
+    <a href="https://github.com/13121349269/travel" target="_blank">⭐ GitHub</a>
+  </nav>
+</div>
+<div id="layout">
+  <aside id="sidebar">
+    <h2>📍 按省份选择</h2>
+    <div class="type-bar">
+      <span class="type-btn active" onclick="filterType('all',this)">全部</span>
+      <span class="type-btn" onclick="filterType('scenic',this)">景点</span>
+      <span class="type-btn" onclick="filterType('food',this)">美食</span>
+      <span class="type-btn" onclick="filterType('stay',this)">住宿</span>
+      <span class="type-btn" onclick="filterType('hot',this)">网红点</span>
+    </div>
+    <div id="provList"></div>
+    <div id="spotArea"></div>
+  </aside>
+  <div style="flex:1;position:relative;">
+    <div id="map"></div>
+    <div id="toast" role="status"></div>
+    <div id="legend">
+      <h3>图例</h3>
+      <div class="legend-row"><span class="legend-dot" style="background:#ff6b6b;"></span> 4A级景区</div>
+      <div class="legend-row"><span class="legend-dot" style="background:#4ec9b0;"></span> 3A级景区</div>
+      <div class="legend-row"><span class="legend-dot" style="background:#8b949e;"></span> 2A/1A级景区</div>
+      <div class="legend-row"><span class="legend-dot" style="background:#f0c674;"></span> 美食/小吃街</div>
+      <div class="legend-row"><span class="legend-dot" style="background:#a371f7;"></span> 住宿区域</div>
+      <div class="legend-row"><span class="legend-dot" style="background:#ff7b3a;"></span> 网红打卡点</div>
     </div>
   </div>
-  <div class="cards">
-    <a class="card main" href="map.html">
-      <div class="icon">🗺️</div>
-      <h2>运城景点地图标注（核心）</h2>
-      <p>运城55家A级景区全量上地图，覆盖13个县（市、区），加美食街、住宿圈、网红打卡点共70个点位。每点含门票、评分、真人评价与高德导航。标准/卫星图切换、聚合缩放、分类筛选。</p>
-      <div class="go">进入地图 →</div>
-    </a>
-    <a class="card" href="shanxi.html">
-      <div class="icon">📋</div>
-      <h2>山西省全域景点总表</h2>
-      <p>全省451家A级景区按11个地市分组，支持按地市、景区等级、关键词筛选。出行山西前先看这张总表。</p>
-      <div class="go">查看总表 →</div>
-    </a>
-    <a class="card" href="guide.html">
-      <div class="icon">🍜</div>
-      <h2>运城食宿攻略</h2>
-      <p>住宿3圈7家酒店对比、5条小吃街详解、10道特色美食、14个网红打卡点。解决"住哪、吃啥、拍什么"。</p>
-      <div class="go">查看攻略 →</div>
-    </a>
-  </div>
-  <footer>
-    纯静态 · 免Key · <a href="https://github.com/13121349269/travel" target="_blank">GitHub 开源</a> | Leaflet.js + 高德地图瓦片（GCJ-02） | lovesummer.me
-  </footer>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script>
+// ============ 全国省份（含中心坐标） ============
+const PROVINCES = [
+  ['北京市', 39.90, 116.40], ['天津市', 39.13, 117.20], ['河北省', 38.04, 114.51],
+  ['山西省', 37.60, 112.20], ['内蒙古自治区', 40.82, 111.65], ['辽宁省', 41.80, 123.43],
+  ['吉林省', 43.88, 125.32], ['黑龙江省', 45.80, 126.53], ['上海市', 31.23, 121.47],
+  ['江苏省', 32.06, 118.80], ['浙江省', 30.27, 120.15], ['安徽省', 31.86, 117.28],
+  ['福建省', 26.08, 119.30], ['江西省', 28.68, 115.86], ['山东省', 36.67, 117.02],
+  ['河南省', 34.75, 113.63], ['湖北省', 30.59, 114.31], ['湖南省', 28.23, 112.94],
+  ['广东省', 23.13, 113.27], ['广西壮族自治区', 22.82, 108.32], ['海南省', 20.02, 110.35],
+  ['重庆市', 29.56, 106.55], ['四川省', 30.57, 104.07], ['贵州省', 26.65, 106.63],
+  ['云南省', 25.04, 102.71], ['西藏自治区', 29.65, 91.14], ['陕西省', 34.27, 108.95],
+  ['甘肃省', 36.06, 103.83], ['青海省', 36.62, 101.78], ['宁夏回族自治区', 38.49, 106.23],
+  ['新疆维吾尔自治区', 43.79, 87.63], ['香港特别行政区', 22.32, 114.17],
+  ['澳门特别行政区', 22.20, 113.55], ['台湾省', 23.70, 120.96]
+];
+
+// ============ 运城70个点位数据 ============
+const spots = [
+  { name:'解州关帝庙（关公故里）', county:'盐湖区', type:'scenic', level:'4A', lat:34.9401, lng:110.5656,
+    price:'60元（淡季50元）', rating:'4.8/携程 · 4.7/同程', addr:'盐湖区解州镇五一路145号',
+    tags:['4A','国保单位','全球最大关帝庙'],
+    review:'"超级推荐，务必请讲解。建筑气势很足，春秋楼斗拱和御书楼藻井细节很猛。"——携程2026.1<br>"庙里香火很旺，门口炸油糕糯软香甜。"——今日头条2025.8' },
+  { name:'运城盐湖（中国死海）', county:'盐湖区', type:'scenic', level:'4A', lat:34.9800, lng:110.8900,
+    price:'免费（体验项目99-238元）', rating:'4.3/携程', addr:'盐湖区城南（池神庙南3公里）',
+    tags:['4A','天空之镜','七彩盐湖'],
+    review:'"盐湖大得像面镜子，夏末秋初最漂亮，湖水五颜六色。"——今日头条2025.8<br>"6-9月色彩最佳，晴天下午4点后低角度光线巨出片。"——运城文旅' },
+  { name:'舜帝陵', county:'盐湖区', type:'scenic', level:'4A', lat:35.0833, lng:110.8667,
+    price:'约50元【待核实】', rating:'4.0', addr:'盐湖区北相镇西曲马村鸣条岗',
+    tags:['4A','华夏寻根','千年古柏'],
+    review:'"三皇五帝中舜帝的安息之地，全球华人的精神图腾。"——今日头条2025' },
+  { name:'凤凰谷景区', county:'盐湖区', type:'scenic', level:'4A', lat:34.9300, lng:110.9800,
+    price:'约40元【待核实】', rating:'4.2', addr:'盐湖区东郭镇柏口窑村（距市区3.8公里）',
+    tags:['4A','天然氧吧','玻璃吊桥'],
+    review:'"森林覆盖率85%，山顶海拔1200米。"——运城市政府<br>"有玻璃吊桥、玻璃漂流、高空索道、时光隧道。"——运城文旅' },
+  { name:'河东池盐文化博览园', county:'盐湖区', type:'scenic', level:'4A', lat:34.9500, lng:110.8500,
+    price:'池神庙35元（淡季）/ 联票50元', rating:'4.4/携程', addr:'盐湖区解放南路386号',
+    tags:['4A','池神庙','盐文化'],
+    review:'"全球唯一供奉盐神的庙宇！唐风建筑与七彩盐湖相映成趣。"——今日头条2025<br>"池神庙红墙是运城出片天花板机位。"——头条' },
+  { name:'常平关帝家庙', county:'盐湖区', type:'scenic', level:'3A', lat:34.9200, lng:110.6100,
+    price:'25元（淡季13元）', rating:'4.5', addr:'盐湖区解州镇常平村平常街98号',
+    tags:['3A','关公出生地','家庙'],
+    review:'"关羽的家庙，红墙绿瓦间藏着1800年前的忠义故事。"——今日头条2025' },
+  { name:'关王庙', county:'盐湖区', type:'scenic', level:'2A', lat:35.0300, lng:110.9900,
+    price:'免费', rating:'3.8', addr:'盐湖区市区（关王庙）',
+    tags:['2A','市区古庙'], review:'"运城市区小众古庙，明代建筑，逛盬街顺路一看。"——本地点评' },
+  { name:'九龙山自然风景区', county:'盐湖区', type:'scenic', level:'2A', lat:34.9000, lng:111.0500,
+    price:'免费/低票价【待核实】', rating:'3.7', addr:'盐湖区东南部中条山北麓',
+    tags:['2A','自然风光'], review:'"本地人周末爬山去处，人少清静。"——本地点评' },
+  { name:'鹳雀楼', county:'永济市', type:'scenic', level:'4A', lat:34.8500, lng:110.4833,
+    price:'54元（淡季45元）', rating:'4.5/携程 · 4.7/同程', addr:'永济市蒲州古城西侧黄河东岸',
+    tags:['4A','四大名楼','王之涣'],
+    review:'"登上六楼看黄河奔腾在一望无际的平原，只会感叹：好一片神州大地。"——东方甄选顿顿<br>"傍晚落日与无人机悬挂国旗绕楼飞翔交相辉映。"——运城文旅' },
+  { name:'普救寺（西厢记）', county:'永济市', type:'scenic', level:'4A', lat:34.8333, lng:110.4667,
+    price:'60元（淡季50元）', rating:'4.4/携程 · 4.8/同程', addr:'永济市蒲州镇西厢村',
+    tags:['4A','四大回音建筑','爱情圣地'],
+    review:'"莺莺塔回音挺出名。"——今日头条2026.5<br>"晚上有实景演出《梦境·西厢记》评分4.7。"——携程' },
+  { name:'五老峰', county:'永济市', type:'scenic', level:'4A', lat:34.7500, lng:110.6333,
+    price:'70元（淡季60元）', rating:'4.4/携程', addr:'永济市东南16公里中条山脉',
+    tags:['4A','道教第五十二福地','滑翔伞'],
+    review:'"史称东华山，历史上为北方道教名山。"——同程<br>"有玻璃栈道+滑道套票39.9元。"——携程' },
+  { name:'神潭大峡谷', county:'永济市', type:'scenic', level:'4A', lat:34.8167, lng:110.5000,
+    price:'26.9元起（套票49.9元）', rating:'5.0/同程', addr:'永济市水峪口古村',
+    tags:['4A','玻璃栈道','水峪口古村'],
+    review:'"年轻人必冲！150米高空玻璃栈道。"——今日头条2025<br>"可以玩水上乐园又可以看风景。"——同程' },
+  { name:'尧王台景区', county:'永济市', type:'scenic', level:'4A', lat:34.8400, lng:110.4200,
+    price:'约40元【待核实】', rating:'4.2', addr:'永济市城西介峪口村南岭',
+    tags:['4A','尧舜禅让','古人类遗址'],
+    review:'"传说尧禅让于舜之地，山上有古人类活动遗址。"——运城文旅' },
+  { name:'蒲津渡遗址博物馆', county:'永济市', type:'scenic', level:'2A', lat:34.8500, lng:110.4400,
+    price:'约20元', rating:'4.3', addr:'永济市蒲州古城西（鹳雀楼旁）',
+    tags:['2A','唐开元铁牛','国保'],
+    review:'"四尊唐开元铁牛重达数十吨，黄河改道后被埋千年重见天日，非常震撼。"——携程' },
+  { name:'黄河大梯子崖', county:'河津市', type:'scenic', level:'4A', lat:35.3833, lng:110.6167,
+    price:'58元（淡季50元）', rating:'4.7/携程', addr:'河津市下化乡半坡村',
+    tags:['4A','玻璃栈道','黄河石梯'],
+    review:'"观黄河登石梯赏幽谷，非常刺激。"——携程<br>"玻璃栈道票38元，套票含游船+攀岩228元。"——携程' },
+  { name:'黄河龙门景区', county:'河津市', type:'scenic', level:'4A', lat:35.6200, lng:110.5200,
+    price:'约50元【待核实】', rating:'4.5', addr:'河津市西北12公里黄河岸（禹门口）',
+    tags:['4A','鲤鱼跳龙门','大禹凿龙门'],
+    review:'"传说中鲤鱼跳龙门的地方，黄河出晋陕峡谷最窄处，气势磅礴。"——今日头条2025' },
+  { name:'古今天下旅游景区', county:'河津市', type:'scenic', level:'3A', lat:35.5500, lng:110.6500,
+    price:'约30元【待核实】', rating:'4.0', addr:'河津市城区附近',
+    tags:['3A','民俗文化'], review:'"河津本地民俗文化园区，适合带孩子体验。"——本地点评' },
+  { name:'真武庙景区', county:'河津市', type:'scenic', level:'2A', lat:35.5800, lng:110.7100,
+    price:'免费/低票价', rating:'4.1', addr:'河津市城区紫金山麓',
+    tags:['2A','道教庙宇','九龙岗'],
+    review:'"河津八景之一麟岛听钟，登庙可俯瞰河津全城。"——本地点评' },
+  { name:'李家大院', county:'万荣县', type:'scenic', level:'4A', lat:35.1167, lng:110.7167,
+    price:'54元（淡季50元）', rating:'4.7/携程 · 4.9/同程', addr:'万荣县高村乡阎景村',
+    tags:['4A','晋商豪宅','徽派+西洋'],
+    review:'"比乔家大院更另类！清末首富李家的私宅，竟藏着哥特式教堂、罗马柱廊！砖雕百善图堪称一绝。"——今日头条2025' },
+  { name:'后土祠', county:'万荣县', type:'scenic', level:'4A', lat:35.0833, lng:110.7500,
+    price:'10元', rating:'4.5', addr:'万荣县荣河镇庙前村（黄河岸边）',
+    tags:['4A','皇天后土','秋风楼'],
+    review:'"轩辕黄帝扫土为坛祭祀大地之母。秋风楼得名于汉武帝《秋风辞》。"——东方甄选顿顿<br>"张仪古道和秋风楼合影超级出片。"——顿顿' },
+  { name:'飞云楼', county:'万荣县', type:'scenic', level:'3A', lat:35.1500, lng:110.8333,
+    price:'10元', rating:'4.8/携程', addr:'万荣县西大街8号',
+    tags:['3A','中华第一木楼','纯木榫卯'],
+    review:'"一进门抬头直接震撼到语塞！七十二组翼角在阳光中次第舒展。"——东方甄选顿顿<br>"10元门票性价比炸裂！"——顿顿' },
+  { name:'孤峰山景区', county:'万荣县', type:'scenic', level:'3A', lat:35.1500, lng:110.8500,
+    price:'约20元', rating:'4.0', addr:'万荣县城南8公里',
+    tags:['3A','法云寺','山地休闲'],
+    review:'"万荣县城边的独山，山顶法云寺，本地人遛弯好去处。"——本地点评' },
+  { name:'万泉文庙', county:'万荣县', type:'scenic', level:'3A', lat:35.1100, lng:110.8700,
+    price:'免费/低票价', rating:'4.0', addr:'万荣县万泉乡万泉村',
+    tags:['3A','国保','古文庙'],
+    review:'"藏于乡镇的国保文庙，大成殿为明代遗构。"——文保爱好者' },
+  { name:'薛瑄故里', county:'万荣县', type:'scenic', level:'3A', lat:35.2400, lng:110.8700,
+    price:'免费', rating:'3.9', addr:'万荣县里望乡平原村',
+    tags:['3A','明代大儒','薛瑄'],
+    review:'"明代理学大师薛瑄故居，廉政文化教育基地。"——运城文旅' },
+  { name:'黄河文化雕塑博览园', county:'万荣县', type:'scenic', level:'2A', lat:35.0500, lng:110.6800,
+    price:'免费', rating:'3.8', addr:'万荣县黄河岸边',
+    tags:['2A','雕塑艺术','黄河文化'],
+    review:'"沿黄河大堤分布的雕塑群，散步骑行皆宜。"——本地点评' },
+  { name:'万荣稷王庙', county:'万荣县', type:'scenic', level:'2A', lat:35.2000, lng:110.7900,
+    price:'免费', rating:'4.2', addr:'万荣县南张乡太赵村',
+    tags:['2A','国保','北宋庑殿顶'],
+    review:'"北宋庑殿顶大殿，全国现存三座之一，古建迷必刷。"——文保爱好者' },
+  { name:'万荣东岳庙', county:'万荣县', type:'scenic', level:'1A', lat:35.1500, lng:110.8333,
+    price:'含在飞云楼门票内', rating:'4.6', addr:'万荣县西大街8号（飞云楼所在庙宇）',
+    tags:['1A','飞云楼主体','国保'],
+    review:'"飞云楼即东岳庙的楼，庙内还有元代午门、享亭。"——文保爱好者' },
+  { name:'永乐宫', county:'芮城县', type:'scenic', level:'4A', lat:34.7167, lng:110.4667,
+    price:'60元（淡季50元）', rating:'4.7/携程 · 4.9/同程', addr:'芮城县永乐北路230号',
+    tags:['4A','国保','元代壁画天花板'],
+    review:'"三清殿《朝元图》286位神仙在墙上等了七百年。看完会默默收起手机。"——今日头条2026.5<br>"禁止闪光灯拍照，强烈推荐请讲解。"——携程2025.12' },
+  { name:'圣天湖景区', county:'芮城县', type:'scenic', level:'4A', lat:34.7300, lng:110.7200,
+    price:'约40元【待核实】', rating:'4.3', addr:'芮城县陌南镇柳湾村',
+    tags:['4A','黄河湿地','白天鹅'],
+    review:'"黄河边上的一汪碧水，冬天有天鹅越冬，夏天荷花满湖。"——今日头条2025' },
+  { name:'大禹渡黄河景区', county:'芮城县', type:'scenic', level:'4A', lat:34.7500, lng:110.5500,
+    price:'38元起', rating:'4.0', addr:'芮城县城东南10公里（古魏镇大禹渡村）',
+    tags:['4A','大禹治水','黄河观景'],
+    review:'"站在悬空玻璃观景台，脚下是奔腾黄河水，对岸是陕西潼关。"——今日头条2025<br>"黄河飞索肾上腺素飙升。"——头条' },
+  { name:'印象风陵渡景区', county:'芮城县', type:'scenic', level:'3A', lat:34.6300, lng:110.3500,
+    price:'约30元', rating:'3.9', addr:'芮城县风陵渡开发区黄河北路北端',
+    tags:['3A','金庸情怀','黄河渡口'],
+    review:'"风陵渡口初相遇——金庸迷必来打卡的情怀地。"——今日头条<br>"黄河北路夜市烧烤是意外惊喜。"——本地点评' },
+  { name:'芮城城隍庙', county:'芮城县', type:'scenic', level:'3A', lat:34.6900, lng:110.6900,
+    price:'20元', rating:'4.3', addr:'芮城县黄河西街与永乐南路交叉口西北',
+    tags:['3A','国保','宋元明清四朝古建'],
+    review:'"集宋、元、明、清四朝古建于一庙。"——运城市政府<br>"门口岚山根集市有芮城卤肉、石子饼。"——运城文旅' },
+  { name:'西侯度遗址', county:'芮城县', type:'scenic', level:'3A', lat:34.6500, lng:110.3800,
+    price:'免费', rating:'4.5', addr:'芮城县风陵渡镇西侯度村',
+    tags:['3A','180万年前人类用火','圣火采集地'],
+    review:'"人类最早用火的地方之一，180万年前！建筑本身就极有设计感。"——今日头条2025<br>"二青会圣火在此采集，出片冷门宝藏。"——携程' },
+  { name:'历山景区', county:'垣曲县', type:'scenic', level:'4A', lat:35.3700, lng:111.8700,
+    price:'约60元【待核实】', rating:'4.5', addr:'垣曲县历山镇文堂村',
+    tags:['4A','华北绿肺','舜耕历山'],
+    review:'"舜耕历山之地，原始森林+高山草甸。"——同程<br>"夏天避暑绝佳，山上凉快得像开了空调。"——携程' },
+  { name:'望仙大峡谷', county:'垣曲县', type:'scenic', level:'4A', lat:35.1700, lng:111.6700,
+    price:'约50元【待核实】', rating:'4.4', addr:'垣曲县望仙乡',
+    tags:['4A','瀑布群','峡谷风光'],
+    review:'"瀑布一个接一个，夏天水量最大最壮观。"——携程<br>"峡谷栈道走得舒服，老人孩子也能玩。"——同程' },
+  { name:'司马光祠', county:'夏县', type:'scenic', level:'4A', lat:35.1900, lng:111.1000,
+    price:'30元', rating:'4.4', addr:'夏县水头镇小晁村（鸣条岗上）',
+    tags:['4A','国保','资治通鉴作者'],
+    review:'"司马光祖茔所在地，苏轼撰文的杏花碑是镇祠之宝。"——运城市政府<br>"余庆禅院是全省现存唯一北宋官式做法古建。"——文保爱好者' },
+  { name:'堆云洞', county:'夏县', type:'scenic', level:'4A', lat:35.2200, lng:111.1300,
+    price:'约30元', rating:'4.3', addr:'夏县水头镇上牛村洞沟',
+    tags:['4A','晋南革命圣地','道观建筑群'],
+    review:'"层层叠叠建于土崖上的道观建筑群，曾是中共河东特委旧址。"——运城市政府<br>"洞中有洞、楼上有楼。"——携程' },
+  { name:'瑶台山景区', county:'夏县', type:'scenic', level:'3A', lat:35.1300, lng:111.2300,
+    price:'约20元', rating:'4.0', addr:'夏县城东2公里巫咸山',
+    tags:['3A','巫咸故里','道教圣地'],
+    review:'"《山海经》记载的巫咸山，山顶有观音殿，可俯瞰夏县全城。"——本地点评' },
+  { name:'格瑞特庄园', county:'夏县', type:'scenic', level:'3A', lat:35.1300, lng:111.2000,
+    price:'免费/消费另计', rating:'4.2', addr:'夏县南大里乡',
+    tags:['3A','酒庄','田园采摘'],
+    review:'"本地葡萄酒庄，可以参观酒窖、采摘、亲子游。"——大众点评' },
+  { name:'绛州署景区', county:'新绛县', type:'scenic', level:'4A', lat:35.6200, lng:111.2200,
+    price:'约40元【待核实】', rating:'4.3', addr:'新绛县城（绛州大堂）',
+    tags:['4A','国保','绛州大堂'],
+    review:'"绛州大堂是国内保存最大的州府衙门大堂之一，元代遗构。"——运城市政府<br>"绛守居园池是中国现存唯一的隋代官家园林。"——文保爱好者' },
+  { name:'龙兴寺', county:'新绛县', type:'scenic', level:'3A', lat:35.6200, lng:111.2200,
+    price:'约15元', rating:'4.4', addr:'新绛县龙兴路2号',
+    tags:['3A','国保','龙兴宝塔'],
+    review:'"登龙兴宝塔尽览古绛州全貌。"——同程<br>"大殿内的元代彩塑非常精美。"——文保爱好者' },
+  { name:'福胜寺', county:'新绛县', type:'scenic', level:'3A', lat:35.7100, lng:111.2300,
+    price:'免费【待核实】', rating:'4.6', addr:'新绛县泽掌镇光马村',
+    tags:['3A','国保','渡海观音'],
+    review:'"明代悬塑渡海观音被称为最美观音，黑神话取景热游地。"——今日头条2025<br>"《黑神话:悟空》扫描的古建之一。"——头条' },
+  { name:'绛州文庙', county:'新绛县', type:'scenic', level:'2A', lat:35.6200, lng:111.2300,
+    price:'免费', rating:'4.0', addr:'新绛县城内四府街',
+    tags:['2A','国保','明代大成殿'],
+    review:'"明代文庙遗构，棂星门根大石柱很气派。"——文保爱好者' },
+  { name:'白台寺', county:'新绛县', type:'scenic', level:'2A', lat:35.7200, lng:111.2000,
+    price:'免费', rating:'3.9', addr:'新绛县泉掌镇光马村西侧',
+    tags:['2A','古寺'], review:'"深藏乡野的小古寺，清净无人。"——文保爱好者' },
+  { name:'国家板枣公园', county:'稷山县', type:'scenic', level:'4A', lat:35.6000, lng:110.9800,
+    price:'免费（项目另计）', rating:'4.3', addr:'稷山县稷峰镇姚村',
+    tags:['4A','千年板枣','观光小火车'],
+    review:'"万亩千年枣林，2025年12月升级开业美食街+观光小火车。"——运城市政府2025.12<br>"秋天打枣节最热闹。"——携程' },
+  { name:'稷山大佛寺', county:'稷山县', type:'scenic', level:'3A', lat:35.6000, lng:110.9900,
+    price:'约10元', rating:'4.2', addr:'稷山县稷峰镇寺后窑村东南',
+    tags:['3A','金代土雕大佛','国保'],
+    review:'"大殿内金代土雕大佛比例适度、栩栩如生。"——运城市政府' },
+  { name:'稷王庙', county:'稷山县', type:'scenic', level:'3A', lat:35.6000, lng:111.0000,
+    price:'约10元', rating:'4.3', addr:'稷山县城（后稷故里）',
+    tags:['3A','国保','农耕始祖'],
+    review:'"全国最大的稷王庙，石雕、木雕、琉璃三绝。"——文保爱好者<br>"后稷教民稼穑之地，农耕文明的源头。"——运城文旅' },
+  { name:'绛北大峡谷', county:'绛县', type:'scenic', level:'4A', lat:35.4200, lng:111.6200,
+    price:'约50元【待核实】', rating:'4.2', addr:'绛县磨里镇炭元河村',
+    tags:['4A','峡谷漂流','森林瀑布'],
+    review:'"夏天玩水漂流好去处，峡谷内凉快。"——同程<br>"绛县本地人周末最常去。"——本地点评' },
+  { name:'紫云寺', county:'绛县', type:'scenic', level:'2A', lat:35.6000, lng:111.5500,
+    price:'免费', rating:'3.8', addr:'绛县南樊镇沸泉村',
+    tags:['2A','古刹'], review:'"沸泉村旁的古寺，温泉资源在此。"——本地点评' },
+  { name:'建龙钢铁文化创意园', county:'闻喜县', type:'scenic', level:'3A', lat:35.3300, lng:111.2200,
+    price:'免费【待核实】', rating:'4.0', addr:'闻喜县东镇',
+    tags:['3A','工业旅游','钢铁是怎样炼成的'],
+    review:'"工业旅游示范点，看现代化钢铁生产线，适合研学。"——运城文旅' },
+  { name:'中华宰相村', county:'闻喜县', type:'scenic', level:'3A', lat:35.4000, lng:111.1300,
+    price:'约30元', rating:'4.2', addr:'闻喜县礼元镇裴柏村',
+    tags:['3A','裴氏家族','59位宰相'],
+    review:'"一个村走出59位宰相、59位大将军！裴氏家训是中华家风典范。"——今日头条2025<br>"裴氏碑馆的文物很值得细看。"——携程' },
+  { name:'临晋县衙', county:'临猗县', type:'scenic', level:'3A', lat:35.0200, lng:110.5800,
+    price:'约20元', rating:'4.1', addr:'临猗县临晋镇唐柏街299号',
+    tags:['3A','国保','元代县衙'],
+    review:'"全国少见的元代县衙大堂遗构，古代官署建筑的活标本。"——运城市政府' },
+  { name:'傅作义故居', county:'临猗县', type:'scenic', level:'2A', lat:35.3000, lng:110.7200,
+    price:'免费', rating:'3.9', addr:'临猗县孙吉镇安昌村',
+    tags:['2A','名人故居','傅作义'],
+    review:'"爱国将领傅作义出生地，黄河岸边的小院。"——运城文旅' },
+  { name:'周仓文化园', county:'平陆县', type:'scenic', level:'3A', lat:34.8500, lng:111.2200,
+    price:'免费【待核实】', rating:'3.9', addr:'平陆县部官乡西祁村',
+    tags:['3A','周仓故里','关公文化'],
+    review:'"关公刀架周仓的故里，与关帝庙文化一脉相承。"——运城文旅' },
+  { name:'盬街夜市', county:'盐湖区', type:'food', level:'', lat:35.0267, lng:110.8333,
+    price:'人均20-40元', rating:'4.5/综合', addr:'运城市中心城区盬街',
+    tags:['美食街','网红夜市','相声表演'],
+    review:'"近130个摊位，日均接待8万人次。霍孝忠桂花油糕30年老店是金字招牌。"——运城市政府2025.7<br>"铁板烧、烤生蚝、小龙虾、手工肠粉琳琅满目。"——运城市政府2024.5' },
+  { name:'黄河夜市', county:'盐湖区', type:'food', level:'', lat:35.0333, lng:110.8500,
+    price:'人均15-30元', rating:'4.6/本地人推荐', addr:'运城市人民北路（解放北路）',
+    tags:['美食街','老牌夜市','本地人首选'],
+    review:'"运城资历最深的夜市之一，同款炒面12元（盬街18元）。"——今日头条2025<br>"马建波羊肉串、时晨卤肉肠、特色饸饹面都是招牌。"——头条' },
+  { name:'御沁园美食广场', county:'盐湖区', type:'food', level:'', lat:35.0400, lng:110.8467,
+    price:'人均15-25元', rating:'4.5/本地人推荐', addr:'运城市御沁园',
+    tags:['美食街','深夜食堂','老店扎堆'],
+    review:'"超长营业到凌晨，砂锅、麻辣串、本地小炒闭眼点不踩雷。"——今日头条2025' },
+  { name:'稷山板枣公园美食街', county:'稷山县', type:'food', level:'', lat:35.6050, lng:110.9800,
+    price:'人均20-40元', rating:'新开业', addr:'稷山县国家板枣公园姚村',
+    tags:['美食街','非遗展示','观光小火车'],
+    review:'"2025年12月升级开业，30余家商户摊位。"——运城市政府2025.12' },
+  { name:'水峪口古村小吃街', county:'永济市', type:'food', level:'', lat:34.8167, lng:110.5000,
+    price:'人均30-50元', rating:'4.3', addr:'永济市水峪口古村（神潭大峡谷旁）',
+    tags:['美食街','景区配套','永济特色'],
+    review:'"逛完神潭大峡谷直接来吃，永济特色面食、鲤鱼面、羊肉泡馍都有。"——去哪儿' },
+  { name:'南风广场/市中心住宿圈', county:'盐湖区', type:'stay', level:'', lat:35.0333, lng:110.8500,
+    price:'106-433元/晚', rating:'4.5-4.9/综合', addr:'运城市南风广场周边',
+    tags:['住宿圈','交通枢纽','连锁酒店集中'],
+    review:'"全季酒店（关帝祖庙店）4.9分，276元/晚。"——同程<br>"运城深航国际酒店4.9分，433元/晚，近机场免费接送机。"——同程<br>"运城诺富特酒店4.8分，378元/晚。"——同程' },
+  { name:'盐湖周边住宿圈', county:'盐湖区', type:'stay', level:'', lat:34.9700, lng:110.8800,
+    price:'164-285元/晚', rating:'4.6-4.8/综合', addr:'盐湖景区周边',
+    tags:['住宿圈','近盐湖','性价比高'],
+    review:'"桔子酒店（条山街店）4.7分，285元/晚。"——同程<br>"非繁城品酒店4.8分，163元/晚。"——同程' },
+  { name:'关帝庙/解州周边住宿', county:'盐湖区', type:'stay', level:'', lat:34.9400, lng:110.5656,
+    price:'276元/晚起', rating:'4.9/同程', addr:'解州关帝庙周边',
+    tags:['住宿圈','景区近','全季酒店'],
+    review:'"全季酒店（关帝祖庙店）4.9分，276元/晚，距景区100米，金可儿床垫。"——同程' },
+  { name:'盐湖"天空之镜"跨湖大道', county:'盐湖区', type:'hot', level:'', lat:34.9750, lng:110.8850,
+    price:'免费', rating:'出片率100%', addr:'解放南路跨湖段（006号灯杆）',
+    tags:['网红','外交部推荐','天空之镜'],
+    review:'"2025国庆航拍视频惊艳世界，外交部发言人毛宁海外转发报道。"——山西网络台2025<br>"006号灯杆五层台阶观景台，纵深感拉满。"——运城文旅' },
+  { name:'山海城公共文化空间', county:'盐湖区', type:'hot', level:'', lat:34.9700, lng:110.8800,
+    price:'免费（消费另计）', rating:'文艺打卡', addr:'盐湖旁',
+    tags:['网红','文艺白屋','落地窗'],
+    review:'"临盐湖而建的白房子，巨大落地窗正对盐湖。日落余晖将湖面染成暖色。"——头条<br>"穿白色或米色系服装与白屋融为一体。"——头条' },
+  { name:'池神庙红墙', county:'盐湖区', type:'hot', level:'', lat:34.9500, lng:110.8500,
+    price:'含门票', rating:'出片天花板', addr:'盐池神庙/河东池盐博物馆',
+    tags:['网红','朱红古墙','岁月感'],
+    review:'"朱红如霞的墙面配青砖飞檐，阳光下像幅会呼吸的古画。"——头条' },
+  { name:'盐湖白色相框', county:'盐湖区', type:'hot', level:'', lat:34.9780, lng:110.8820,
+    price:'免费', rating:'纯净大片', addr:'盐湖之畔',
+    tags:['网红','取景框','日出日落'],
+    review:'"纯白色相框简洁醒目，站进相框里你便成了画中最美风景。"——头条' },
+  { name:'盐湖之眼摩天轮', county:'盐湖区', type:'hot', level:'', lat:34.9850, lng:110.8950,
+    price:'49.9-69.8元', rating:'3.7/携程', addr:'凤凰谷景区东侧',
+    tags:['网红','摩天轮','俯瞰盐湖'],
+    review:'"坐在摩天轮上前面是盐湖后面是南山，如同身在大理苍山洱海。"——运城文旅' },
+  { name:'七彩罗曼（邮票同款）', county:'盐湖区', type:'hot', level:'', lat:34.9650, lng:110.8700,
+    price:'免费', rating:'季节限定', addr:'盐湖环湖绿道15号路',
+    tags:['网红','国家名片','季节限定'],
+    review:'"已入选《美丽中国·运城盐湖》邮票。湖面呈玫瑰红。"——运城文旅' },
+];
+
+// ============ 地图初始化 ============
+const typeColors = {
+  scenic: { '4A': '#ff6b6b', '3A': '#4ec9b0', '2A': '#8b949e', '1A': '#6e7681', default: '#ff6b6b' },
+  food: '#f0c674', stay: '#a371f7', hot: '#ff7b3a',
+};
+function getMarkerColor(spot) {
+  if (spot.type === 'scenic') return typeColors.scenic[spot.level] || typeColors.scenic.default;
+  return typeColors[spot.type] || '#58a6ff';
+}
+function createIcon(color) {
+  return L.divIcon({
+    className: 'custom-marker',
+    html: '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="36" viewBox="0 0 28 36">' +
+      '<path d="M14 0C6.3 0 0 6.3 0 14c0 10.5 14 22 14 22s14-11.5 14-22C28 6.3 21.7 0 14 0z" fill="' + color + '" stroke="#fff" stroke-width="2" opacity="0.95"/>' +
+      '<circle cx="14" cy="14" r="5.5" fill="#fff"/></svg>',
+    iconSize: [28, 36], iconAnchor: [14, 36], popupAnchor: [0, -34],
+  });
+}
+
+const map = L.map('map', { center: [35.02, 110.85], zoom: 9, zoomControl: true, attributionControl: true });
+const amapVec = L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+  subdomains: ['1','2','3','4'], maxZoom: 18, maxNativeZoom: 18, attribution: '高德地图 | Leaflet.js',
+}).addTo(map);
+const amapImg = L.tileLayer('https://webst0{s}.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}', {
+  subdomains: ['1','2','3','4'], maxZoom: 18, maxNativeZoom: 18, attribution: '高德卫星 | Leaflet.js',
+});
+
+const clusterGroup = L.markerClusterGroup({
+  showCoverageOnHover: false, maxClusterRadius: 40,
+  iconCreateFunction: function(cluster) {
+    const count = cluster.getChildCount();
+    return L.divIcon({
+      html: '<div style="background:rgba(88,166,255,0.8);color:#fff;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;border:2px solid rgba(255,255,255,0.5);">' + count + '</div>',
+      className: 'cluster-icon', iconSize: [36, 36],
+    });
+  },
+});
+const allMarkers = [];
+spots.forEach((spot, idx) => {
+  spot.id = idx + 1;
+  const marker = L.marker([spot.lat, spot.lng], { icon: createIcon(getMarkerColor(spot)) });
+  const tagsHtml = spot.tags.map(t => '<span class="iw-tag">' + t + '</span>').join('');
+  marker.bindPopup(
+    '<div style="min-width:260px;max-width:340px;padding:10px;">' +
+    '<div class="iw-title">' + spot.name + '</div>' +
+    '<div style="margin-bottom:4px;">' + tagsHtml + '</div>' +
+    '<div>门票：<span class="iw-price">' + spot.price + '</span></div>' +
+    '<div>评分：<span class="iw-rating">' + spot.rating + '</span></div>' +
+    '<div class="iw-addr">地址：' + spot.addr + '</div>' +
+    '<div class="iw-review">' + spot.review + '</div>' +
+    '<div class="iw-nav"><a class="amap-link" href="https://uri.amap.com/marker?position=' + spot.lng + ',' + spot.lat + '&name=' + encodeURIComponent(spot.name) + '" target="_blank">高德导航</a></div>' +
+    '</div>', { maxWidth: 380, minWidth: 260 });
+  marker.spotData = spot;
+  allMarkers.push(marker);
+});
+allMarkers.forEach(m => clusterGroup.addLayer(m));
+map.addLayer(clusterGroup);
+
+// ============ 左侧：省份列表 ============
+const TYPE_WORD = { scenic: '景点', food: '美食', stay: '住宿', hot: '网红点' };
+const TYPE_ORDER = { scenic: 0, food: 1, stay: 2, hot: 3 };
+let currentType = 'all';
+let currentProv = '山西省';
+
+const provListEl = document.getElementById('provList');
+PROVINCES.forEach(([name]) => {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'prov-btn' + (name === '山西省' ? ' active' : '');
+  if (name === '山西省') btn.id = 'provShanxi';
+  btn.innerHTML = '<span>' + name + '</span>' + (name === '山西省' ? '<small class="has">已收录55家</small>' : '<small>整理中</small>');
+  btn.onclick = function() { selectProvince(name, btn); };
+  provListEl.appendChild(btn);
+});
+
+function selectProvince(name, btn) {
+  currentProv = name;
+  document.querySelectorAll('.prov-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const center = PROVINCES.find(p => p[0] === name);
+  if (name === '山西省') {
+    hideToast();
+    renderSpotList();
+    showMarkers();
+    map.flyTo([35.02, 110.85], 9, { duration: 0.8 });
+  } else {
+    hideToast();
+    clusterGroup.clearLayers();
+    document.getElementById('spotArea').innerHTML =
+      '<div style="padding:16px 8px;text-align:center;color:#8b949e;font-size:12px;line-height:1.8;">' +
+      '<div style="font-size:26px;">🚧</div>' + name + ' 景区数据整理中<br>' +
+      '目前已收录 <strong style="color:#f0c674;">山西省451家</strong> A级景区<br>' +
+      '<a href="shanxi.html" style="color:#58a6ff;">查看总表 →</a></div>';
+    if (center) map.flyTo([center[1], center[2]], 6, { duration: 1.2 });
+    showToast(name);
+  }
+}
+
+function showToast(prov) {
+  const t = document.getElementById('toast');
+  t.innerHTML = '<strong>' + prov + '</strong> 的景区数据正在整理中。<br>当前已完整收录山西省451家A级景区（运城55家全部展开）。<br>' +
+    '<button type="button" onclick="selectProvince(\'山西省\', document.getElementById(\'provShanxi\'))">去山西看看 →</button>';
+  t.style.display = 'block';
+}
+function hideToast() { document.getElementById('toast').style.display = 'none'; }
+
+// ============ 类型筛选 ============
+function filterType(type, el) {
+  currentType = type;
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  if (currentProv === '山西省') { renderSpotList(); showMarkers(); }
+}
+
+function showMarkers() {
+  clusterGroup.clearLayers();
+  allMarkers.filter(m => currentType === 'all' || m.spotData.type === currentType)
+    .forEach(m => clusterGroup.addLayer(m));
+}
+
+// ============ 山西省景点列表（按县区分组+类型标注） ============
+function tagLabelOf(spot) {
+  const word = TYPE_WORD[spot.type] || '';
+  return (spot.type === 'scenic' && spot.level) ? (word + '·' + spot.level) : word;
+}
+function tagClassOf(spot) {
+  if (spot.type === 'scenic' && spot.level) return 'tag-' + spot.level;
+  return 'tag-' + spot.type;
+}
+
+function renderSpotList() {
+  const area = document.getElementById('spotArea');
+  area.innerHTML = '';
+  const filtered = currentType === 'all' ? spots : spots.filter(s => s.type === currentType);
+  const countyOrder = ['盐湖区','永济市','河津市','万荣县','芮城县','垣曲县','夏县','新绛县','稷山县','绛县','闻喜县','临猗县','平陆县'];
+  const groups = new Map();
+  filtered.forEach(spot => {
+    if (!groups.has(spot.county)) groups.set(spot.county, []);
+    groups.get(spot.county).push(spot);
+  });
+  const sortedCounties = [...groups.keys()].sort((a, b) => countyOrder.indexOf(a) - countyOrder.indexOf(b));
+  sortedCounties.forEach(county => {
+    const items = groups.get(county).sort((a, b) => TYPE_ORDER[a.type] - TYPE_ORDER[b.type]);
+    const h = document.createElement('div');
+    h.className = 'county-header';
+    h.textContent = '📍 ' + county + '（' + items.length + '）';
+    area.appendChild(h);
+    items.forEach(spot => {
+      const div = document.createElement('div');
+      div.className = 'spot-item';
+      div.innerHTML =
+        '<div class="name"><span class="dot" style="background:' + getMarkerColor(spot) + ';"></span>' + spot.name +
+        ' <span class="tag-mini ' + tagClassOf(spot) + '">' + tagLabelOf(spot) + '</span></div>' +
+        '<div class="meta">' + spot.addr + '</div>' +
+        '<div class="meta">门票：<span class="price">' + spot.price + '</span> | <span class="rating">' + spot.rating + '</span></div>';
+      div.onclick = function() {
+        map.flyTo([spot.lat, spot.lng], 14, { duration: 0.8 });
+        setTimeout(() => {
+          const m = allMarkers.find(m => m.spotData.id === spot.id);
+          if (m) clusterGroup.zoomToShowLayer(m, () => m.openPopup());
+        }, 500);
+        document.querySelectorAll('.spot-item').forEach(el => el.classList.remove('active'));
+        div.classList.add('active');
+      };
+      area.appendChild(div);
+    });
+  });
+}
+
+renderSpotList();
+</script>
 </body>
 </html>
