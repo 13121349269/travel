@@ -92,14 +92,7 @@
 </div>
 <div id="layout">
   <aside id="sidebar">
-    <h2>📍 按省份选择</h2>
-    <div class="type-bar">
-      <span class="type-btn active" onclick="filterType('all',this)">全部</span>
-      <span class="type-btn" onclick="filterType('scenic',this)">景点</span>
-      <span class="type-btn" onclick="filterType('food',this)">美食</span>
-      <span class="type-btn" onclick="filterType('stay',this)">住宿</span>
-      <span class="type-btn" onclick="filterType('hot',this)">网红点</span>
-    </div>
+    <h2>📍 按地区选择</h2>
     <div class="cascade">
       <label for="provSel">省份</label>
       <select id="provSel" onchange="onProvinceChange()"><option value="">全国（不限）</option></select>
@@ -107,6 +100,13 @@
       <select id="citySel" onchange="onCityChange()" disabled><option value="">请先选择省份</option></select>
       <label for="countySel">区 / 县</label>
       <select id="countySel" onchange="onCountyChange()" disabled><option value="">请先选择城市</option></select>
+    </div>
+    <div class="type-bar">
+      <span class="type-btn active" onclick="filterType('all',this)">全部</span>
+      <span class="type-btn" onclick="filterType('scenic',this)">景点</span>
+      <span class="type-btn" onclick="filterType('food',this)">美食</span>
+      <span class="type-btn" onclick="filterType('stay',this)">住宿</span>
+      <span class="type-btn" onclick="filterType('hot',this)">网红点</span>
     </div>
     <div id="spotArea"></div>
   </aside>
