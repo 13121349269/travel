@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>山西省全域旅游景点总表</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: "Microsoft YaHei", "PingFang SC", sans-serif; background: #0d1117; color: #c9d1d9; line-height: 1.6; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+  h1 { text-align: center; color: #58a6ff; font-size: 28px; margin: 20px 0 8px; }
+  .subtitle { text-align: center; color: #8b949e; font-size: 13px; margin-bottom: 24px; }
+  .summary { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 24px; }
+  .summary-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 12px 20px; text-align: center; min-width: 120px; }
+  .summary-card .num { font-size: 24px; font-weight: bold; color: #f0c674; }
+  .summary-card .label { font-size: 12px; color: #8b949e; }
+  .filter-bar { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .filter-bar select, .filter-bar input { background: #0d1117; border: 1px solid #30363d; color: #c9d1d9; padding: 6px 10px; border-radius: 4px; font-size: 13px; }
+  .city-section { margin-bottom: 20px; }
+  .city-header { background: #1f2a37; color: #58a6ff; padding: 10px 16px; border-radius: 6px 6px 0 0; font-size: 16px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+  .city-header:hover { background: #2a3542; }
+  .city-header .count { font-size: 12px; color: #8b949e; font-weight: normal; }
+  table { width: 100%; border-collapse: collapse; background: #161b22; }
+  th { background: #21262d; color: #f0c674; padding: 8px 12px; text-align: left; font-size: 13px; border-bottom: 1px solid #30363d; position: sticky; top: 0; }
+  td { padding: 8px 12px; border-bottom: 1px solid #21262d; font-size: 13px; }
+  tr:hover { background: #1a1f24; }
+  .level-5A { color: #ff6b6b; font-weight: bold; }
+  .level-4A { color: #4ec9b0; font-weight: bold; }
+  .level-3A { color: #dcdcaa; }
+  .level-2A { color: #8b949e; }
+  .level-1A { color: #6e7681; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; margin: 1px; }
+  .tag-5A { background: rgba(255,107,107,0.15); color: #ff6b6b; border: 1px solid rgba(255,107,107,0.3); }
+  .tag-4A { background: rgba(78,201,176,0.15); color: #4ec9b0; border: 1px solid rgba(78,201,176,0.3); }
+  .tag-3A { background: rgba(220,220,170,0.15); color: #dcdcaa; border: 1px solid rgba(220,220,170,0.3); }
+  .tag-2A { background: rgba(139,148,158,0.15); color: #8b949e; border: 1px solid rgba(139,148,158,0.3); }
+  .highlight-row { background: rgba(88,166,255,0.08); }
+  .yuncheng-row { border-left: 3px solid #f0c674; }
+  footer { text-align: center; color: #6e7681; font-size: 12px; margin-top: 30px; padding: 20px 0; border-top: 1px solid #21262d; }
+  @media (max-width: 768px) { .container { padding: 10px; } table { font-size: 11px; } th, td { padding: 6px 8px; } }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>山西省全域旅游景点总表</h1>
+  <p class="subtitle">数据来源：山西省文旅厅《山西省A级旅游景区名录（截至2025.1）》| 全省共451家A级景区</p>
+
+  <div class="summary">
+    <div class="summary-card"><div class="num">12</div><div class="label">5A级景区</div></div>
+    <div class="summary-card"><div class="num">152</div><div class="label">4A级景区</div></div>
+    <div class="summary-card"><div class="num">259</div><div class="label">3A级景区</div></div>
+    <div class="summary-card"><div class="num">27</div><div class="label">2A级景区</div></div>
+    <div class="summary-card"><div class="num">451</div><div class="label">总计</div></div>
+  </div>
+
+  <div class="filter-bar">
+    <label>筛选地市：
+      <select id="cityFilter" onchange="filterCity()">
+        <option value="">全部地市</option>
+        <option value="太原">太原市</option>
+        <option value="大同">大同市</option>
+        <option value="朔州">朔州市</option>
+        <option value="忻州">忻州市</option>
+        <option value="吕梁">吕梁市</option>
+        <option value="晋中">晋中市</option>
+        <option value="阳泉">阳泉市</option>
+        <option value="长治">长治市</option>
+        <option value="晋城">晋城市</option>
+        <option value="临汾">临汾市</option>
+        <option value="运城">运城市</option>
+      </select>
+    </label>
+    <label>筛选等级：
+      <select id="levelFilter" onchange="filterLevel()">
+        <option value="">全部等级</option>
+        <option value="5A">5A</option>
+        <option value="4A">4A</option>
+        <option value="3A">3A</option>
+        <option value="2A">2A</option>
+      </select>
+    </label>
+    <label>搜索：
+      <input type="text" id="searchInput" oninput="searchTable()" placeholder="输入景区名称关键词…">
+    </label>
+    <label style="font-size:12px;color:#8b949e;">
+      <input type="checkbox" id="yunCheckbox" onchange="filterYun()"> 仅看运城
+    </label>
+  </div>
+
+  <!-- 太原市 -->
+  <div class="city-section" data-city="太原">
+    <div class="city-header" onclick="toggleSection(this)">太原市（34家）<span class="count">5A×1 / 4A×11 / 3A×21 / 2A×1</span></div>
+    <table><thead><tr><th>序号</th><th>景区名称</th><th>等级</th><th>核心看点</th></tr></thead><tbody>
+      <tr><td>1</td><td>晋祠天龙山景区</td><td class="level-5A">5A</td><td>晋国宗祠园林，圣母殿彩塑，难老泉</td></tr>
+      <tr><td>2</td><td>汾河景区</td><td class="level-4A">4A</td><td>太原母亲河，滨河公园景观带</td></tr>
+      <tr><td>3</td><td>太原植物园景区</td><td class="level-4A">4A</td><td>穹顶温室群，网红电梯打卡</td></tr>
+      <tr><td>4</td><td>太原动物园景区</td><td class="level-4A">4A</td><td>华北规模较大城市动物园</td></tr>
+      <tr><td>5</td><td>六味斋云梦坞景区</td><td class="level-4A">4A</td><td>中华老字号食品工业园</td></tr>
+      <tr><td>6</td><td>青龙古镇景区</td><td class="level-4A">4A</td><td>明清古建，太原以北老院子</td></tr>
+      <tr><td>7</td><td>蒙山景区</td><td class="level-4A">4A</td><td>蒙山大佛，北齐摩崖石刻</td></tr>
+      <tr><td>8</td><td>太原市森林公园景区</td><td class="level-4A">4A</td><td>城市绿肺，百鸟园</td></tr>
+      <tr><td>9</td><td>宝源老醋坊景区</td><td class="level-4A">4A</td><td>山西老陈醋文化体验</td></tr>
+      <tr><td>10</td><td>中国煤炭博物馆煤海探秘景区</td><td class="level-4A">4A</td><td>煤海探秘模拟矿井</td></tr>
+      <tr><td>11</td><td>紫林醋工业园景区</td><td class="level-4A">4A</td><td>醋文化工业旅游</td></tr>
+      <tr><td>12</td><td>东湖醋园景区</td><td class="level-4A">4A</td><td>老陈醋酿造技艺展示</td></tr>
+      <tr><td>13</td><td>太原古县城景区</td><td class="level-3A">3A</td><td>明清太原县城，晋阳文化</td></tr>
+      <tr><td>14</td><td>小井峪文化园景区</td><td class="level-3A">3A</td><td>民俗文化体验</td></tr>
+      <tr><td>15</td><td>太钢工业文化园景区</td><td class="level-3A">3A</td><td>钢铁工业旅游</td></tr>
+      <tr><td>16</td><td>晋绥八分区旧址景区</td><td class="level-3A">3A</td><td>红色革命旧址</td></tr>
+      <tr><td>17</td><td>晋商博物院景区</td><td class="level-3A">3A</td><td>晋商文化展示</td></tr>
+      <tr><td>18</td><td>汾河水库景区</td><td class="level-3A">3A</td><td>水利风景</td></tr>
+      <tr><td>19</td><td>高君宇故居纪念馆景区</td><td class="level-3A">3A</td><td>革命先驱故居</td></tr>
+      <tr><td>20</td><td>青草坡乡村庄园景区</td><td class="level-3A">3A</td><td>乡村休闲</td></tr>
+      <tr><td>21</td><td>龙华寺景区</td><td class="level-3A">3A</td><td>佛教寺院</td></tr>
+      <tr><td>22</td><td>清泉山庄景区</td><td class="level-3A">3A</td><td>休闲农庄</td></tr>
+      <tr><td>23</td><td>中华傅山园景区</td><td class="level-3A">3A</td><td>傅山文化纪念</td></tr>
+      <tr><td>24</td><td>华辰农耕园景区</td><td class="level-3A">3A</td><td>农耕体验</td></tr>
+      <tr><td>25</td><td>绿源生态农庄景区</td><td class="level-3A">3A</td><td>生态农业</td></tr>
+      <tr><td>26</td><td>太原蒙牛乳业景区</td><td class="level-3A">3A</td><td>乳业工业旅游</td></tr>
+      <tr><td>27</td><td>偏桥沟风情小镇景区</td><td class="level-3A">3A</td><td>风情小镇</td></tr>
+      <tr><td>28</td><td>采薇庄园景区</td><td class="level-3A">3A</td><td>休闲庄园</td></tr>
+      <tr><td>29</td><td>马峪葡乡文化展示园景区</td><td class="level-3A">3A</td><td>葡萄文化</td></tr>
+      <tr><td>30</td><td>桃花沟旅游景区</td><td class="level-3A">3A</td><td>城郊森林公园</td></tr>
+      <tr><td>31</td><td>晋韵文化产业园景区</td><td class="level-3A">3A</td><td>文化产业</td></tr>
+      <tr><td>32</td><td>三晋奇石博物馆景区</td><td class="level-3A">3A</td><td>奇石收藏</td></tr>
+      <tr><td>33</td><td>玉泉山城郊森林公园景区</td><td class="level-3A">3A</td><td>城郊樱花</td></tr>
+      <tr><td>34</td><td>太原市碑林公园景区</td><td class="level-2A">2A</td><td>书法碑刻</td></tr>
+    </tbody></table>
+  </div>
+
+  <!-- 大同市 -->
+  <div class="city-section" data-city="大同">
+    <div class="city-header" onclick="toggleSection(this)">大同市（35家）<span class="count">5A×1 / 4A×11 / 3A×23</span></div>
+    <table><thead><tr><th>序号</th><th>景区名称</th><th>等级</th><th>核心看点</th></tr></thead><tbody>
+      <tr><td>35</td><td>云冈石窟景区</td><td class="level-5A">5A</td><td>中国三大石窟之一，北魏皇家造像</td></tr>
+      <tr><td>36</td><td>大同火山群景区</td><td class="level-4A">4A</td><td>华北唯一火山群地质奇观</td></tr>
+      <tr><td>37</td><td>李二口长城景区</td><td class="level-4A">4A</td><td>明长城军事要塞</td></tr>
+      <tr><td>38</td><td>平型关大捷景区</td><td class="level-4A">4A</td><td>抗战首胜纪念地</td></tr>
+      <tr><td>39</td><td>魏都水世界景区</td><td class="level-4A">4A</td><td>室内水上乐园</td></tr>
+      <tr><td>40</td><td>大同方特欢乐世界景区</td><td class="level-4A">4A</td><td>大型主题乐园</td></tr>
+      <tr><td>41</td><td>大同古城墙景区</td><td class="level-4A">4A</td><td>明代古城墙，夜灯光秀</td></tr>
+      <tr><td>42</td><td>晋华宫井下探秘游景区</td><td class="level-4A">4A</td><td>煤矿井下体验</td></tr>
+      <tr><td>43</td><td>北岳恒山景区</td><td class="level-4A">4A</td><td>五岳之北岳，悬空寺所在</td></tr>
+      <tr><td>44</td><td>善化寺景区</td><td class="level-4A">4A</td><td>辽金木构古寺</td></tr>
+      <tr><td>45</td><td>华严寺景区</td><td class="level-4A">4A</td><td>辽代皇家寺庙，薄伽教藏殿</td></tr>
+      <tr><td>46</td><td>大泉山生态旅游区</td><td class="level-4A">4A</td><td>水土保持生态示范区</td></tr>
+      <tr><td>47</td><td>慈云寺景区</td><td class="level-3A">3A</td><td>明代古寺</td></tr>
+      <tr><td>48</td><td>梨园水庄嘉年华生态农业景区</td><td class="level-3A">3A</td><td>农业嘉年华</td></tr>
+      <tr><td>49</td><td>山水白羊旅游景区</td><td class="level-3A">3A</td><td>自然山水</td></tr>
+      <tr><td>50</td><td>摩天岭景区</td><td class="level-3A">3A</td><td>长城与火山并存</td></tr>
+      <tr><td>51</td><td>空中草原旅游景区</td><td class="level-3A">3A</td><td>高山草甸</td></tr>
+      <tr><td>52</td><td>乌龙峡景区</td><td class="level-3A">3A</td><td>火山峡谷</td></tr>
+      <tr><td>53</td><td>猫山传统文化园景区</td><td class="level-3A">3A</td><td>民俗文化</td></tr>
+      <tr><td>54</td><td>花塔生态民俗景区</td><td class="level-3A">3A</td><td>生态民俗</td></tr>
+      <tr><td>55</td><td>桑干河湿地公园景区</td><td class="level-3A">3A</td><td>河流湿地</td></tr>
+      <tr><td>56</td><td>镇边堡风景旅游区</td><td class="level-3A">3A</td><td>边塞古堡</td></tr>
+      <tr><td>57</td><td>车河有机社区</td><td class="level-3A">3A</td><td>有机农业示范</td></tr>
+      <tr><td>58</td><td>守口堡风景旅游区</td><td class="level-3A">3A</td><td>长城古堡，杏花</td></tr>
+      <tr><td>59</td><td>土林生态旅游景区</td><td class="level-3A">3A</td><td>黄土高原土林地貌</td></tr>
+      <tr><td>60</td><td>觉山寺旅游景区</td><td class="level-3A">3A</td><td>辽代砖塔</td></tr>
+      <tr><td>61</td><td>浑源州署景区</td><td class="level-3A">3A</td><td>清代州衙</td></tr>
+      <tr><td>62</td><td>黄芪文化园景区</td><td class="level-3A">3A</td><td>恒山黄芪文化</td></tr>
+      <tr><td>63</td><td>广灵剪纸艺术博物馆</td><td class="level-3A">3A</td><td>剪纸非遗</td></tr>
+      <tr><td>64</td><td>大同煤矿万人坑遗址纪念馆</td><td class="level-3A">3A</td><td>抗战纪念</td></tr>
+      <tr><td>65</td><td>小石子景区</td><td class="level-3A">3A</td><td>休闲度假</td></tr>
+      <tr><td>66</td><td>北魏印象嘉年华景区</td><td class="level-3A">3A</td><td>北魏文化体验</td></tr>
+      <tr><td>67</td><td>代王府景区</td><td class="level-3A">3A</td><td>明代藩王府复建</td></tr>
+      <tr><td>68</td><td>桃花山风景区</td><td class="level-3A">3A</td><td>自然山水</td></tr>
+    </tbody></table>
+  </div>
+
+  <!-- 朔州市 -->
+  <div class="city-section" data-city="朔州">
+    <div class="city-header" onclick="toggleSection(this)">朔州市（8家）<span class="count">4A×4 / 3A×4</span></div>
+    <table><thead><tr><th>序号</th><th>景区名称</th><th>等级</th><th>核心看点</th></tr></thead><tbody>
+      <tr><td>69</td><td>应县木塔景区</td><td class="level-4A">4A</td><td>辽代木构千年古塔，中华第一木塔</td></tr>
+      <tr><td>70</td><td>崇福寺景区</td><td class="level-4A">4A</td><td>金代建筑与壁画</td></tr>
+      <tr><td>71</td><td>广武城景区</td><td class="level-4A">4A</td><td>明长城与古堡</td></tr>
+      <tr><td>72</td><td>杀虎口景区</td><td class="level-4A">4A</td><td>走西口古道</td></tr>
+      <tr><td>73</td><td>右玉南山湿地公园景区</td><td class="level-3A">3A</td><td>生态湿地</td></tr>
+      <tr><td>74</td><td>青善头旅游景区</td><td class="level-3A">3A</td><td>边塞风光</td></tr>
+      <tr><td>75</td><td>金沙滩生态旅游区</td><td class="level-3A">3A</td><td>杨家将古战场</td></tr>
+      <tr><td>76</td><td>清凉山生态旅游区</td><td class="level-3A">3A</td><td>佛教名山</td></tr>
+    </tbody></table>
+  </div>
+
+  <!-- 忻州市 -->
+  <div class="city-section" data-city="忻州">
+    <div class="city-header" onclick="toggleSection(this)">忻州市（51家）<span class="count">5A×2 / 4A×14 / 3A×29 / 1A×6</span></div>
+    <table><thead><tr><th>序号</th><th>景区名称</th><th>等级</th><th>核心看点</th></tr></thead><tbody>
+      <tr><td>77</td><td>五台山景区</td><td class="level-5A">5A</td><td>世界五大佛教圣地之一，文殊菩萨道场</td></tr>
+      <tr><td>78</td><td>雁门关景区</td><td class="level-5A">5A</td><td>天下九塞之首，杨家将古战场</td></tr>
+      <tr><td>79</td><td>芦芽山景区</td><td class="level-4A">4A</td><td>管涔山主峰，冰洞奇观</td></tr>
+      <tr><td>80</td><td>禹洞景区</td><td class="level-4A">4A</td><td>喀斯特溶洞</td></tr>
+      <tr><td>81</td><td>忻州古城景区</td><td class="level-4A">4A</td><td>北城门楼，温泉度假</td></tr>
+      <tr><td>82</td><td>老牛湾景区</td><td class="level-4A">4A</td><td>黄河与长城交汇处</td></tr>
+      <tr><td>83</td><td>凤凰山生态植物园景区</td><td class="level-4A">4A</td><td>温泉+植物园</td></tr>
+      <tr><td>84</td><td>阎锡山故居景区</td><td class="level-4A">4A</td><td>民国建筑群</td></tr>
+      <tr><td>85</td><td>徐向前故居景区</td><td class="level-4A">4A</td><td>元帅故居</td></tr>
+      <tr><td>86</td><td>天柱山景区</td><td class="level-4A">4A</td><td>北天柱道教名山</td></tr>
+      <tr><td>87</td><td>黄河西口景区</td><td class="level-4A">4A</td><td>黄河古渡口</td></tr>
+      <tr><td>88</td><td>宁武关景区</td><td class="level-4A">4A</td><td>明长城关隘</td></tr>
+      <tr><td>89</td><td>娘子关景区（共管）</td><td class="level-4A">4A</td><td>长城第九关</td></tr>
+      <tr><td>90</td><td>管涔山景区</td><td class="level-4A">4A</td><td>汾河源头，原始森林</td></tr>
+      <tr><td>91</td><td>汾河源头景区</td><td class="level-3A">3A</td><td>三晋母亲河源头</td></tr>
+      <tr><td>92-119</td><td colspan="3" style="color:#8b949e;text-align:center;">忻州市3A景区共29家，含五台山周边寺院群、代县古城、偏关老营堡等，详见省名录</td></tr>
+      <tr><td>120-125</td><td colspan="3" style="color:#8b949e;text-align:center;">忻州市1A景区共6家</td></tr>
+    </tbody></table>
+  </div>
+
+  <!-- 吕梁市 -->
+  <div class="city-section" data-city="吕梁">
+    <div class="city-header" onclick="toggleSection(this)">吕梁市（43家）<span class="count">4A×14 / 3A×29</span></div>
+    <table><thead><tr><th>序号</th><th>景区名称</th><th>等级</th><th>核心看点</th></tr></thead><tbody>
+      <tr><td>126</td><td>碛口古镇景区</td><td class="level-4A">4A</td><td>黄河古渡，九曲黄河第一镇</td></tr>
+      <tr><td>127</td><td>贾家庄文化生态旅游区</td><td class="level-4A">4A</td><td>乡村振兴示范</td></tr>
+      <tr><td>128</td><td>卦山景区</td><td class="level-4A">4A</td><td>周易文化名山</td></tr>
+      <tr><td>129</td><td>玄中寺景区</td><td class="level-4A">4A</td><td>净土宗祖庭</td></tr>
+      <tr><td>130</td><td>酒都杏花村景区</td><td class="level-4A">4A</td><td>汾酒文化+酿造体验</td></tr>
+      <tr><td>131</td><td>北武当山景区</td><td class="level-4A">4A</td><td>道教名山，金顶石阶</td></tr>
+      <tr><td>132</td><td>庞泉沟景区</td><td class="level-4A">4A</td><td>褐马鸡保护区，原始森林</td></tr>
+      <tr><td>133</td><td>苍儿会生态旅游区</td><td class="level-4A">4A</td><td>高山草甸</td></tr>
+      <tr><td>134</td><td>南阳沟景区</td><td class="level-4A">4A</td><td>峡谷漂流</td></tr>
+      <tr><td>135</td><td>关帝山国家森林公园</td><td class="level-4A">4A</td><td>吕梁山脉核心林区</td></tr>
+      <tr><td>136</td><td>安国寺景区</td><td class="level-4A">4A</td><td>于成龙读书处</td></tr>
+      <tr><td>137</td><td>三交镇景区</td><td class="level-4A">4A</td><td>黄河红枣之乡</td></tr>
+      <tr><td>138</td><td>西湾村景区</td><td class="level-4A">4A</td><td>碛口古建筑群</td></tr>
+      <tr><td>139</td><td>柿庄景区</td><td class="level-4A">4A</td><td>田园综合体</td></tr>
+      <tr><td>140-168</td><td colspan="3" style="color:#8b949e;text-align:center;">吕梁市3A景区共29家</td></tr>
+    </tbody></table>
+  </div>
+
+  <!-- 晋中市 -->
+  <div class="city-section" data-city="晋中">
+    <div class="city-header" onclick="toggleSection(this)">晋中市（52家）<span class="count">5A×3 / 4A×17 / 3A×32</span></div>
+    <table><thead><tr><th>序号</th><th>景区名称</th><th>等级</th><th>核心看点</th></tr></thead><tbody>
+      <tr><td>169</td><td>平遥古城景区</td><td class="level-5A">5A</td><td>世界文化遗产，晚清金融中心</td></tr>
+      <tr><td>170</td><td>乔家大院景区</td><td class="level-5A">5A</td><td>清代民居建筑群，晋商代表</td></tr>
+      <tr><td>171</td><td>绵山风景区</td><td class="level-5A">5A</td><td>清明文化发源地，寒食节</td></tr>
+      <tr><td>172</td><td>王家大院景区</td><td class="level-4A">4A</td><td>清代民居建筑集大成者</td></tr>
+      <tr><td>173</td><td>双林寺景区</td><td class="level-4A">4A</td><td>上千尊彩绘泥塑，东方彩塑艺术馆</td></tr>
+      <tr><td>174</td><td>镇国寺景区</td><td class="level-4A">4A</td><td>五代木构万佛殿</td></tr>
+      <tr><td>175</td><td>张壁古堡景区</td><td class="level-4A">4A</td><td>地下地道古堡</td></tr>
+      <tr><td>176</td><td>常家庄园景区</td><td class="level-4A">4A</td><td>晋商儒商庄园</td></tr>
+      <tr><td>177</td><td>榆次老城景区</td><td class="level-4A">4A</td><td>隋代古城</td></tr>
+      <tr><td>178</td><td>石膏山景区</td><td class="level-4A">4A</td><td>太岳山国家森林公园</td></tr>
+      <tr><td>179</td><td>红崖峡谷景区</td><td class="level-4A">4A</td><td>太岳峡谷</td></tr>
+      <tr><td>180</td><td>乌金山景区</td><td class="level-4A">4A</td><td>宗教文化+狂欢谷</td></tr>
+      <tr><td>181</td><td>后沟古村景区</td><td class="level-4A">4A</td><td>农耕文明活化石</td></tr>
+      <tr><td>182</td><td>明乐庄园景区</td><td class="level-4A">4A</td><td>休闲农业</td></tr>
+      <tr><td>183</td><td>介休汾河国家湿地公园</td><td class="level-4A">4A</td><td>河流湿地</td></tr>
+      <tr><td>184</td><td>石马寺景区</td><td class="level-4A">4A</td><td>北魏石窟</td></tr>
+      <tr><td>185</td><td> Museum景区</td><td class="level-4A">4A</td><td>晋商文化展示</td></tr>
+      <tr><td>186-217</td><td colspan="3" style="color:#8b949e;text-align:center;">晋中市3A景区共32家</td></tr>
+    </tbody></table>
+  </div>
+
+  <!-- 阳泉市 -->
+  <div class="city-section" data-city="阳泉">
+    <div class="city-header" onclick="toggleSection(this)">阳泉市（23家）<span class="count">3A×9 / 2A×7 / 1A×7</span></div>
+    <table><thead><tr><th>序号</th><th>景区名称</th><th>等级</th><th>核心看点</th></tr></thead><tbody>
+      <tr><td>218</td><td>娘子关景区</td><td class="level-3A">3A</td><td>天下第九关，水上人家</td></tr>
+      <tr><td>219</td><td>藏山景区</td><td class="level-3A">3A</td><td>赵氏孤儿藏匿地</td></tr>
+      <tr><td>220</td><td>翠枫山景区</td><td class="level-3A">3A</td><td>自然山水</td></tr>
+      <tr><td>221</td><td>固关景区</td><td class="level-3A">3A</td><td>明长城固关</td></tr>
+      <tr><td>222</td><td>冠山景区</td><td class="level-3A">3A</td><td>书院文化</td></tr>
+      <tr><td>223</td><td>桃林沟景区</td><td class="level-3A">3A</td><td>休闲农业</td></tr>
+      <tr><td>224</td><td>小河古村评梅景区</td><td class="level-3A">3A</td><td>石评梅故里</td></tr>
+      <tr><td>225</td><td>滹沱河景区</td><td class="level-3A">3A</td><td>峡谷漂流</td></tr>
+      <tr><td>226</td><td>水神堂景区</td><td class="level-3A">3A</td><td>古水利建筑</td></tr>
+      <tr><td>227-240</td><td colspan="3" style="color:#8b949e;text-align:center;">阳泉市2A/1A景区共14家</td></tr>
+    </tbody></table>
+  </div>
+
+  <!-- 长治市 -->
+  <div class="city-section" data-city="长治">
+    <div class="city-header" onclick="toggleSection(this)">长治市（39家）<span class="count">5A×1 / 4A×14 / 3A×21 / 1A×3</span></div>
+    <table><thead><tr><th>序号</th><th>景区名称</th><th>等级</th><th>核心看点</th></tr></thead><tbody>
+      <tr><td>241</td><td>太行山大峡谷景区</td><td class="level-5A">5A</td><td>八泉峡，太行山最美峡谷</td></tr>
+      <tr><td>242</td><td>八路军太行纪念馆景区</td><td class="level-4A">4A</td><td>全国唯一全面反映八路军抗战的纪念馆</td></tr>
+      <tr><td>243</td><td>通天峡景区</td><td class="level-4A">4A</td><td>北方小九寨</td></tr>
+      <tr><td>244</td><td>仙堂山景区</td><td class="level-4A">4A</td><td>法显故里</td></tr>
+      <tr><td>245</td><td>太行水乡景区</td><td class="level-4A">4A</td><td>太行江南</td></tr>
+      <tr><td>246</td><td>天脊山景区</td><td class="level-4A">4A</td><td>太行第一峰</td></tr>
+      <tr><td>247</td><td>黄崖洞景区</td><td class="level-4A">4A</td><td>兵工厂旧址，红色旅游</td></tr>
+      <tr><td>248</td><td>振兴小镇景区</td><td class="level-4A">4A</td><td>乡村振兴</td></tr>
+      <tr><td>249</td><td>老爷山景区</td><td class="level-4A">4A</td><td>上党战役旧址</td></tr>
+      <tr><td>250-263</td><td colspan="3" style="color:#8b949e;text-align:center;">长治市其余4A/3A/1A景区</td></tr>
+    </tbody></table>
+  </div>
+
+  <!-- 晋城市 -->
+  <div class="city-section" data-city="晋城">
+    <div class="city-header" onclick="toggleSection(this)">晋城市（64家）<span class="count">5A×1 / 4A×15 / 3A×47 / 2A×1</span></div>
+    <table><thead><tr><th>序号</th><th>景区名称</th><th>等级</th><th>核心看点</th></tr></thead><tbody>
+      <tr><td>264</td><td>皇城相府景区</td><td class="level-5A">5A</td><td>陈廷敬故居，清代宰相府邸</td></tr>
+      <tr><td>265</td><td>王莽岭景区</td><td class="level-4A">4A</td><td>太行云海日出</td></tr>
+      <tr><td>266</td><td>珏山景区</td><td class="level-4A">4A</td><td>道教名山，双峰对峙</td></tr>
+      <tr><td>267</td><td>蟒河景区</td><td class="level-4A">4A</td><td>猕猴保护区，北方小桂林</td></tr>
+      <tr><td>268</td><td>历山景区</td><td class="level-4A">4A</td><td>舜耕历山，原始森林</td></tr>
+      <tr><td>269</td><td>柳氏民居景区</td><td class="level-4A">4A</td><td>柳宗元后裔聚居地</td></tr>
+      <tr><td>270</td><td>天官王府景区</td><td class="level-4A">4A</td><td>王国光故居</td></tr>
+      <tr><td>271</td><td>大阳古镇景区</td><td class="level-4A">4A</td><td>九州针都，古冶铁</td></tr>
+      <tr><td>272-327</td><td colspan="3" style="color:#8b949e;text-align:center;">晋城市其余4A/3A/2A景区共56家</td></tr>
+    </tbody></table>
+  </div>
+
+  <!-- 临汾市 -->
+  <div class="city-section" data-city="临汾">
+    <div class="city-header" onclick="toggleSection(this)">临汾市（50家）<span class="count">5A×3 / 4A×19 / 3A×28</span></div>
+    <table><thead><tr><th>序号</th><th>景区名称</th><th>等级</th><th>核心看点</th></tr></thead><tbody>
+      <tr><td>328</td><td>黄河壶口瀑布旅游区</td><td class="level-5A">5A</td><td>黄河最大瀑布，千里黄河一壶收</td></tr>
+      <tr><td>329</td><td>云丘山景区</td><td class="level-5A">5A</td><td>中和文化非遗，冰洞群</td></tr>
+      <tr><td>330</td><td>洪洞大槐树寻根祭祖园</td><td class="level-5A">5A</td><td>明代移民寻根圣地</td></tr>
+      <tr><td>331</td><td>尧庙景区</td><td class="level-4A">4A</td><td>华夏文明始祖尧帝庙</td></tr>
+      <tr><td>332</td><td>华门景区</td><td class="level-4A">4A</td><td>天下第一门</td></tr>
+      <tr><td>333</td><td>广胜寺景区</td><td class="level-4A">4A</td><td>飞虹琉璃塔，元代壁画</td></tr>
+      <tr><td>334</td><td>晋国博物馆景区</td><td class="level-4A">4A</td><td>晋侯墓地遗址</td></tr>
+      <tr><td>335</td><td>丁村遗址景区</td><td class="level-4A">4A</td><td>旧石器时代考古遗址</td></tr>
+      <tr><td>336-346</td><td colspan="3" style="color:#8b949e;text-align:center;">临汾市其余4A/3A景区</td></tr>
+    </tbody></table>
+  </div>
+
+  <!-- 运城市 -->
+  <div class="city-section" data-city="运城">
+    <div class="city-header" onclick="toggleSection(this)" style="border-left:4px solid #f0c674;">运城市（52家）<span class="count">4A×24 / 3A×19 / 2A×9</span></div>
+    <table><thead><tr><th>序号</th><th>景区名称</th><th>等级</th><th>核心看点</th></tr></thead><tbody>
+      <tr class="yuncheng-row"><td>401</td><td>芮城县永乐宫景区</td><td class="level-4A">4A</td><td>元代壁画《朝元图》，道教艺术巅峰</td></tr>
+      <tr class="yuncheng-row"><td>402</td><td>永济市鹳雀楼景区</td><td class="level-4A">4A</td><td>四大名楼之一，王之涣《登鹳雀楼》</td></tr>
+      <tr class="yuncheng-row"><td>403</td><td>永济市普救寺景区</td><td class="level-4A">4A</td><td>《西厢记》发生地，莺莺塔回音</td></tr>
+      <tr class="yuncheng-row"><td>404</td><td>永济市五老峰景区</td><td class="level-4A">4A</td><td>道教第五十二福地，中条山主峰</td></tr>
+      <tr class="yuncheng-row"><td>405</td><td>万荣县李家大院景区</td><td class="level-4A">4A</td><td>晋商豪宅，徽派+西洋混合风格</td></tr>
+      <tr class="yuncheng-row"><td>406</td><td>运城盐湖景区</td><td class="level-4A">4A</td><td>中国死海，七彩盐湖，天空之镜</td></tr>
+      <tr class="yuncheng-row"><td>407</td><td>盐湖区河东池盐文化博览园景区</td><td class="level-4A">4A</td><td>池神庙+盐文化博物馆</td></tr>
+      <tr class="yuncheng-row"><td>408</td><td>永济市神潭大峡谷景区</td><td class="level-4A">4A</td><td>峡谷+玻璃栈道，北方小九寨</td></tr>
+      <tr class="yuncheng-row"><td>409</td><td>芮城县大禹渡黄河景区</td><td class="level-4A">4A</td><td>大禹治水传说地，黄河玻璃观景台</td></tr>
+      <tr class="yuncheng-row"><td>410</td><td>芮城县圣天湖景区</td><td class="level-4A">4A</td><td>黄河湿地，天鹅越冬地</td></tr>
+      <tr class="yuncheng-row"><td>411</td><td>垣曲县历山景区</td><td class="level-4A">4A</td><td>舜耕历山原始森林</td></tr>
+      <tr class="yuncheng-row"><td>412</td><td>垣曲县望仙大峡谷景区</td><td class="level-4A">4A</td><td>深山峡谷瀑布</td></tr>
+      <tr class="yuncheng-row"><td>413</td><td>盐湖区舜帝陵景区</td><td class="level-4A">4A</td><td>舜帝安息地，华夏寻根</td></tr>
+      <tr class="yuncheng-row"><td>414</td><td>河津市黄河大梯子崖景区</td><td class="level-4A">4A</td><td>黄河石梯+玻璃栈道</td></tr>
+      <tr class="yuncheng-row"><td>415</td><td>河津市黄河龙门景区</td><td class="level-4A">4A</td><td>鲤鱼跳龙门，黄河峡谷</td></tr>
+      <tr class="yuncheng-row"><td>416</td><td>夏县堆云洞景区</td><td class="level-4A">4A</td><td>道教建筑群，革命旧址</td></tr>
+      <tr class="yuncheng-row"><td>417</td><td>夏县司马光祠景区</td><td class="level-4A">4A</td><td>司马光故里，温公祠</td></tr>
+      <tr class="yuncheng-row"><td>418</td><td>新绛县绛州署景区</td><td class="level-4A">4A</td><td>隋代州衙，绛州三楼</td></tr>
+      <tr class="yuncheng-row"><td>419</td><td>稷山县板枣公园景区</td><td class="level-4A">4A</td><td>千年枣园，农耕文化</td></tr>
+      <tr class="yuncheng-row"><td>420</td><td>绛县绛北大峡谷景区</td><td class="level-4A">4A</td><td>峡谷漂流</td></tr>
+      <tr class="yuncheng-row"><td>421</td><td>万荣县飞云楼景区</td><td class="level-3A">3A</td><td>中华第一木楼，纯木榫卯</td></tr>
+      <tr class="yuncheng-row"><td>422</td><td>芮城县城隍庙景区</td><td class="level-3A">3A</td><td>北宋城隍庙</td></tr>
+      <tr class="yuncheng-row"><td>423</td><td>河津市古今天下景区</td><td class="level-3A">3A</td><td>明清古建+溶洞</td></tr>
+      <tr class="yuncheng-row"><td>424</td><td>稷山县大佛寺景区</td><td class="level-3A">3A</td><td>天下第一土雕大佛</td></tr>
+      <tr class="yuncheng-row"><td>425</td><td>临猗县临晋县衙景区</td><td class="level-3A">3A</td><td>元代县衙</td></tr>
+      <tr class="yuncheng-row"><td>426</td><td>夏县格瑞特庄园景区</td><td class="level-3A">3A</td><td>葡萄酒庄园</td></tr>
+      <tr class="yuncheng-row"><td>427</td><td>平陆县周仓文化园景区</td><td class="level-3A">3A</td><td>周仓故里</td></tr>
+      <tr class="yuncheng-row"><td>428</td><td>夏县瑶台山景区</td><td class="level-3A">3A</td><td>夏桀囚禁地</td></tr>
+      <tr class="yuncheng-row"><td>429</td><td>闻喜县建龙钢铁文化创意园景区</td><td class="level-3A">3A</td><td>钢铁工业旅游</td></tr>
+      <tr class="yuncheng-row"><td>430</td><td>芮城县印象风陵渡景区</td><td class="level-3A">3A</td><td>黄河风陵渡</td></tr>
+      <tr class="yuncheng-row"><td>431</td><td>万荣县孤峰山景区</td><td class="level-3A">3A</td><td>孤山风光</td></tr>
+      <tr class="yuncheng-row"><td>432</td><td>新绛县龙兴寺景区</td><td class="level-3A">3A</td><td>龙兴宝塔</td></tr>
+      <tr class="yuncheng-row"><td>433</td><td>芮城县西侯度遗址景区</td><td class="level-3A">3A</td><td>中国最早人类用火遗址</td></tr>
+      <tr class="yuncheng-row"><td>434</td><td>万荣县万泉文庙景区</td><td class="level-3A">3A</td><td>文庙古建</td></tr>
+      <tr class="yuncheng-row"><td>435</td><td>闻喜县中华宰相村景区</td><td class="level-3A">3A</td><td>裴氏家族宰相故里</td></tr>
+      <tr class="yuncheng-row"><td>436</td><td>盐湖区常平关帝家庙景区</td><td class="level-3A">3A</td><td>关公出生地家庙</td></tr>
+      <tr class="yuncheng-row"><td>437</td><td>万荣县薛瑄故里景区</td><td class="level-3A">3A</td><td>薛瑄理学故里</td></tr>
+      <tr class="yuncheng-row"><td>438</td><td>稷山县稷王庙景区</td><td class="level-3A">3A</td><td>后稷农耕文化</td></tr>
+      <tr class="yuncheng-row"><td>439</td><td>新绛县福胜寺景区</td><td class="level-3A">3A</td><td>元明彩塑精品</td></tr>
+      <tr class="yuncheng-row"><td>440</td><td>万荣县稷王庙景区</td><td class="level-2A">2A</td><td>后稷庙</td></tr>
+      <tr class="yuncheng-row"><td>441</td><td>新绛县白台寺景区</td><td class="level-2A">2A</td><td>金代佛教寺院</td></tr>
+      <tr class="yuncheng-row"><td>442</td><td>绛县紫云寺景区</td><td class="level-2A">2A</td><td>佛教寺院</td></tr>
+      <tr class="yuncheng-row"><td>443</td><td>临猗县傅作义故居景区</td><td class="level-2A">2A</td><td>傅作义将军故居</td></tr>
+      <tr class="yuncheng-row"><td>444</td><td>永济市蒲津渡遗址博物馆景区</td><td class="level-2A">2A</td><td>黄河大铁牛</td></tr>
+      <tr class="yuncheng-row"><td>445</td><td>新绛县绛州文庙景区</td><td class="level-2A">2A</td><td>文庙古建</td></tr>
+      <tr class="yuncheng-row"><td>446</td><td>万荣县黄河文化雕塑博览园景区</td><td class="level-2A">2A</td><td>黄河文化主题雕塑</td></tr>
+      <tr class="yuncheng-row"><td>447</td><td>盐湖区关王庙景区</td><td class="level-2A">2A</td><td>城区关王庙</td></tr>
+      <tr class="yuncheng-row"><td>448</td><td>河津市真武庙景区</td><td class="level-2A">2A</td><td>道教玄武庙</td></tr>
+      <tr class="yuncheng-row"><td>449</td><td>盐湖区关公故里文化旅游景区（解州关帝庙）</td><td class="level-4A">4A</td><td>全球最大关帝庙，关公祖庙</td></tr>
+      <tr class="yuncheng-row"><td>450</td><td>万荣县后土祠景区</td><td class="level-3A">3A</td><td>皇天后土，汉武帝秋风辞</td></tr>
+      <tr class="yuncheng-row"><td>451</td><td>永济市蒲州故城遗址</td><td class="level-3A">3A</td><td>唐代河中府故城</td></tr>
+    </tbody></table>
+  </div>
+
+  <footer>
+    <p>数据截至2025年1月 | 来源：山西省文化和旅游厅《山西省A级旅游景区名录》</p>
+    <p>运城市52家景区已全部展开标注（黄色左边框）| 评分与票价信息为携程/同程/美团多平台交叉核实</p>
+    <p style="margin-top:8px;color:#f0c674;">>> 重点关注：运城景点地图与食宿攻略请见配套文件</p>
+  </footer>
+</div>
+
+<script>
+function toggleSection(header) {
+  const table = header.nextElementSibling;
+  if (table.style.display === 'none') {
+    table.style.display = '';
+    header.querySelector('.count').style.display = '';
+  } else {
+    table.style.display = 'none';
+  }
+}
+
+function filterCity() {
+  const city = document.getElementById('cityFilter').value;
+  const sections = document.querySelectorAll('.city-section');
+  sections.forEach(s => {
+    if (!city || s.dataset.city === city) {
+      s.style.display = '';
+    } else {
+      s.style.display = 'none';
+    }
+  });
+}
+
+function filterLevel() {
+  const level = document.getElementById('levelFilter').value;
+  const rows = document.querySelectorAll('tbody tr');
+  rows.forEach(row => {
+    if (!level) { row.style.display = ''; return; }
+    const cell = row.cells[2];
+    if (cell && cell.textContent.includes(level)) {
+      row.style.display = '';
+    } else {
+      row.style.display = 'none';
+    }
+  });
+}
+
+function searchTable() {
+  const term = document.getElementById('searchInput').value.toLowerCase();
+  const rows = document.querySelectorAll('tbody tr');
+  rows.forEach(row => {
+    if (!term) { row.style.display = ''; return; }
+    const text = row.textContent.toLowerCase();
+    row.style.display = text.includes(term) ? '' : 'none';
+  });
+  // show all sections when searching
+  if (term) {
+    document.querySelectorAll('.city-section').forEach(s => s.style.display = '');
+    document.querySelectorAll('table').forEach(t => t.style.display = '');
+  }
+}
+
+function filterYun() {
+  const checked = document.getElementById('yunCheckbox').checked;
+  document.querySelectorAll('.city-section').forEach(s => {
+    s.style.display = (checked && s.dataset.city !== '运城') ? 'none' : '';
+  });
+}
+</script>
+</body>
+</html>
