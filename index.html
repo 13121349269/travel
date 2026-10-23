@@ -10,9 +10,9 @@
 <meta property="og:description" content="地图找景点，一搜即达：全国1700+旅游点位+真实游客评价+一键高德导航。">
 <meta property="og:type" content="website">
 <meta name="theme-color" content="#0d1117">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+<link rel="stylesheet" href="vendor/leaflet.css" />
+<link rel="stylesheet" href="vendor/MarkerCluster.css" />
+<link rel="stylesheet" href="vendor/MarkerCluster.Default.css" />
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; background: #0d1117; color: #c9d1d9; font-family: "Microsoft YaHei", "PingFang SC", sans-serif; }
@@ -171,8 +171,8 @@
   </div>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script src="vendor/leaflet.js"></script>
+<script src="vendor/markercluster.js"></script>
 <script>
 // ============ 全国省份（含中心坐标） ============
 const PROVINCES = [
@@ -191,6 +191,7 @@ const PROVINCES = [
 ];
 
 // ============ 运城70个点位数据 ============
+let searchQuery = '';
 const spots = [
   { name:'解州关帝庙（关公故里）', county:'盐湖区', type:'scenic', level:'4A', lat:34.9401, lng:110.5656,
     price:'60元（淡季50元）', rating:'4.8/携程 · 4.7/同程', addr:'盐湖区解州镇五一路145号',
@@ -2486,6 +2487,7 @@ function makeFullMarker(s) {
       '<div class="iw-title">' + s.n + '</div>' +
       '<span class="iw-tag">' + s.l + '</span> <span class="iw-tag">' + s.p + '</span>' +
       '<div style="margin-top:4px;">门票：<span class="iw-price">' + s.t + '</span></div>' +
+      (s.q ? '<div style="margin-top:6px;padding:5px 7px;background:rgba(163,113,247,0.10);border-left:2px solid #a371f7;border-radius:4px;font-size:12px;line-height:1.7;color:#b9c2cf;">' + s.q + '</div>' : '') +
       '<div class="iw-addr">数据来源：China Top Attractions 公开数据集（2026-08核验）</div>' +
       '<div class="iw-nav"><a class="amap-link" href="https://uri.amap.com/marker?position=' + gc[1] + ',' + gc[0] + '&name=' + encodeURIComponent(s.n) + '" target="_blank">高德导航</a></div></div>', { maxWidth: 300 });
     return m;
@@ -2619,7 +2621,6 @@ function appendSpotItem(area, spot, showProv) {
   area.appendChild(div);
 }
 
-let searchQuery = '';
 const searchBoxEl = document.getElementById('searchBox');
 if (searchBoxEl) {
   searchBoxEl.addEventListener('input', function() {
