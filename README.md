@@ -1,34 +1,42 @@
-# 山西 · 运城全域旅游攻略
+# 全国旅游攻略地图
 
-一套纯前端、免Key、打开即用的运城全域旅游工具包。
+纯前端、免 Key、打开即用的**全国**旅游攻略站点。地图直出全国 34 个省级行政区，按名称/城市一键搜索，附真实游客评价与高德导航。
+
+**线上地址：https://travel.lovesummer.me/**
 
 ## 页面
 
 | 页面 | 内容 |
 |---|---|
-| `index.html` | 站点首页导航 |
-| `map.html` | **运城55家A级景区地图标注**（4A×24 / 3A×19 / 2A×9 / 1A×1）+ 美食街、住宿圈、网红点，共70个点位，含门票/评分/真人评价/高德导航 |
-| `shanxi.html` | 山西省451家A级景区总表，按11地市分组，支持筛选 |
-| `guide.html` | 运城食宿攻略：3住宿圈7家酒店、5条小吃街、10道美食、14个网红打卡点 |
+| `index.html` | **全国旅游攻略地图（主页）**：1,753 个精选点位（景点 1,071 / 美食 271 / 住宿 194 / 网红点 217），覆盖 34 省级行政区；省-市-区县三级级联 + 类型筛选 + 全国搜索框；勾选可叠加 5A/4A 全量图层（1,310 家，293 家带真实评价卡） |
+| `map.html` | 运城 55 家 A 级景区地图标注（4A×24 / 3A×19 / 2A×9 / 1A×1）+ 美食街、住宿圈、网红点，共 70 个点位 |
+| `guide.html` | 运城食宿攻略：3 住宿圈 7 家酒店、5 条小吃街、10 道美食、14 个网红打卡点 |
+| `shanxi.html` | 山西省 451 家 A 级景区总表，按 11 地市分组，支持筛选 |
+
+## 功能亮点
+
+- **真实游客评价**：精选层 2,993 条署名评价（携程 / 马蜂窝 / 大众点评 / 同程 / Trip.com / Tripadvisor / OpenRice 等），负面真实吐槽照收，不编造
+- **5A/4A 全量图层**：1,310 家（5A×357 + 4A×953），懒加载不影响首屏，弹窗含中文票价、评价卡与高德导航
+- **全国搜索**：按名称 / 城市 / 地址 / 标签实时检索，结果点击直接飞到地图定位
+- **移动端适配**：全屏地图 + 底部抽屉式侧栏，safe-area 适配
 
 ## 技术
 
-- [Leaflet.js](https://github.com/Leaflet/Leaflet) + [Leaflet.markercluster](https://github.com/Leaflet/Leaflet.markercluster)（GitHub 开源）
-- 高德地图瓦片（GCJ-02），免 API Key
-- 纯静态 HTML，GitHub Pages 部署
-
-## 线上地址
-
-**https://lovesummer.me/**
+- [Leaflet.js](https://github.com/Leaflet/Leaflet) + [Leaflet.markercluster](https://github.com/Leaflet/Leaflet.markercluster)，已本地化到 `vendor/`（无外部 CDN 依赖）
+- 高德地图瓦片（GCJ-02），免 API Key；WGS-84 数据经 `wgs2gcj()` 纠偏
+- 纯静态 HTML + 原生 JS，GitHub Pages 部署
 
 ## 数据来源
 
-运城市文化和旅游局、山西省文旅厅官方名录（2025-2026）；携程、同程等多平台门票与评分核实。
-全国5A/4A全量图层：[China Top Attractions](https://chinatopattractions.com/china-attractions-dataset/) 公开数据集（1,310条，WGS-84坐标，2026-08核验，已转GCJ-02）。
-全国A级景区总量口径：文化和旅游部《2025年文化和旅游发展统计公报》（2025年末16,994个）。
+- 山西省文旅厅官方 A 级景区名录（2025–2026，PDF 提取）
+- 全国 5A/4A 全量图层：[China Top Attractions](https://chinatopattractions.com/china-attractions-dataset/) 公开数据集（1,310 条，WGS-84 坐标，2026-08 核验，已转 GCJ-02）
+- 全国 A 级景区总量口径：文化和旅游部《2025 年文化和旅游发展统计公报》（2025 年末 16,994 个）
+- 评价原文：携程、去哪儿、马蜂窝、大众点评、同程、Trip.com、Tripadvisor、OpenRice、新华网等公开平台与报道引述
 
 ## 已知限制
 
-- 小众景区坐标为乡镇级近似定位
+- 小众景区坐标为乡镇/县级近似定位
 - 少数未查到官方票价的小景区标注【待核实】
+- 山西部分县保级文保小点（约 118 家）全网无真实游客点评，未编造评价
+- 全量图层剩余约 1,000 家 4A 尚未挂评价（5A 已覆盖 222/357）
 - 万荣东岳庙（1A）与飞云楼（3A）同址（飞云楼即东岳庙主楼）
