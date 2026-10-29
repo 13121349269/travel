@@ -22,6 +22,10 @@
   .type-bar { max-width: 960px; margin: 8px auto 0; padding: 0 12px; display: flex; gap: 6px; flex-wrap: wrap; }
   .tbtn { font-size: 12px; padding: 5px 12px; border-radius: 14px; border: 1px solid #30363d; background: #161b22; color: #8b949e; cursor: pointer; user-select: none; }
   .tbtn.active { color: #f0c674; border-color: #f0c674; background: rgba(240,198,116,.08); }
+  .chips { max-width: 960px; margin: 8px auto 0; padding: 0 12px; display: none; gap: 6px; flex-wrap: wrap; }
+  .chips.show { display: flex; }
+  .chip { font-size: 12px; padding: 4px 10px; border-radius: 12px; background: #161b22; border: 1px solid #30363d; color: #8b949e; text-decoration: none; }
+  .chip.active { color: #58a6ff; border-color: #58a6ff; }
   main { max-width: 960px; margin: 12px auto; padding: 0 12px; }
   .stats { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
   .stat { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 8px 14px; font-size: 12px; }
@@ -52,6 +56,7 @@
     <a class="back" href="index.html">← 返回全国地图</a>
   </div>
   <div class="toolbar">
+    <select id="provJump"><option value="">切换省份…</option></select>
     <select id="lvSel"><option value="">全部等级</option><option value="5A">5A</option><option value="4A">4A</option></select>
     <select id="citySel"><option value="">全部城市</option></select>
     <input id="kw" type="search" placeholder="搜索景区名…">
@@ -64,6 +69,7 @@
     <span class="tbtn" data-t="hot">📸 网红点</span>
   </div>
 </header>
+<div class="chips" id="cityChips"></div>
 <main>
   <div class="stats" id="stats"></div>
   <div id="list"></div>
@@ -73,7 +79,7 @@
 <script>
 if ('serviceWorker' in navigator) { window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); }); }
 const $ = id => document.getElementById(id);
-let spots = [], featured = [], curType = 'all', prov = '', cityParam = '', cityMap = {};
+let spots = [], featured = [], curType = 'all', prov = '', cityParam = '', cityMap = {}, allData = [];
 const TYPE_LABEL = { food: '🍜 美食', stay: '🏨 住宿', hot: '📸 网红点' };
 function q(name) { return new URLSearchParams(location.search).get(name) || ''; }
 function gaode(lat, lng, name) { return 'https://uri.amap.com/marker?position=' + lng + ',' + lat + '&name=' + encodeURIComponent(name); }
@@ -87,6 +93,7 @@ function init() {
     cityMap = cm || {};
     return fetch('data/national.json').then(r => r.json());
   }).then(data => {
+    allData = data;
     if (prov) {
       spots = data.filter(x => x.p === prov);
       if (!spots.length) spots = data.filter(x => x.p.startsWith(prov) || prov.startsWith(x.p.slice(0, 2)));
@@ -95,6 +102,8 @@ function init() {
     const cities = [...new Set(spots.map(cn).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'zh'));
     cities.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; $('citySel').appendChild(o); });
     if (cityParam) $('citySel').value = cityParam;
+    buildProvJump();
+    buildCityChips(cities);
     return fetch('data/featured.json').then(r => r.json()).catch(() => []);
   }).then(feat => {
     featured = prov ? feat.filter(x => x.prov === prov) : feat;
@@ -106,6 +115,30 @@ function init() {
     b.classList.add('active'); curType = b.dataset.t;
     if (curType !== 'all') { $('lvSel').value = ''; }
     render();
+  });
+}
+function buildProvJump() {
+  const ps = [...new Set(allData.map(x => x.p))].sort((a, b) => a.localeCompare(b, 'zh'));
+  const sel = $('provJump');
+  ps.forEach(p => {
+    const o = document.createElement('option');
+    o.value = p;
+    o.textContent = p.replace(/(维吾尔|回族|壮族)?自治区$|省$/, '');
+    if (p === prov) o.selected = true;
+    sel.appendChild(o);
+  });
+  sel.onchange = () => { if (sel.value) location.href = 'province.html?p=' + encodeURIComponent(sel.value); };
+}
+function buildCityChips(cities) {
+  const box = $('cityChips');
+  if (!cities.length) return;
+  box.classList.add('show');
+  cities.forEach(c => {
+    const a = document.createElement('a');
+    a.className = 'chip' + (c === cityParam ? ' active' : '');
+    a.textContent = c;
+    a.href = 'province.html?p=' + encodeURIComponent(prov) + '&c=' + encodeURIComponent(c);
+    box.appendChild(a);
   });
 }
 function render() {
