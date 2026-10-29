@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>省级景区详情 | 全国旅游攻略地图</title>
+<meta name="description" content="按省浏览全国5A/4A级景区：等级/城市筛选、真实游客评价、票价与一键高德导航。">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.json">
+<style>
+  :root { color-scheme: dark; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0d1117; color: #c9d1d9; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; padding-bottom: env(safe-area-inset-bottom); }
+  header { background: #161b22; border-bottom: 1px solid #30363d; padding: 12px 16px; position: sticky; top: 0; z-index: 100; }
+  .hrow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; max-width: 960px; margin: 0 auto; }
+  header h1 { font-size: 17px; color: #f0c674; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  header h1 span { color: #8b949e; font-size: 12px; font-weight: normal; }
+  .back { color: #58a6ff; text-decoration: none; font-size: 13px; white-space: nowrap; }
+  .toolbar { max-width: 960px; margin: 10px auto 0; display: flex; gap: 8px; flex-wrap: wrap; }
+  .toolbar select, .toolbar input { background: #21262d; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px; padding: 7px 10px; font-size: 16px; }
+  .toolbar input { flex: 1; min-width: 140px; }
+  main { max-width: 960px; margin: 12px auto; padding: 0 12px; }
+  .stats { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .stat { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 8px 14px; font-size: 12px; }
+  .stat b { color: #f0c674; font-size: 16px; display: block; }
+  .card { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; }
+  .card-top { display: flex; align-items: flex-start; gap: 8px; }
+  .badge { flex-shrink: 0; font-size: 11px; font-weight: bold; border-radius: 5px; padding: 2px 7px; margin-top: 2px; }
+  .b5 { background: rgba(240,198,116,.15); color: #f0c674; border: 1px solid #f0c674; }
+  .b4 { background: rgba(139,148,158,.12); color: #c9d1d9; border: 1px solid #8b949e; }
+  .card h2 { font-size: 15px; color: #e6edf3; flex: 1; }
+  .meta { font-size: 12px; color: #8b949e; margin: 6px 0 0 0; display: flex; gap: 10px; flex-wrap: wrap; }
+  .acts { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+  .btn { font-size: 12px; padding: 5px 12px; border-radius: 6px; border: 1px solid #30363d; background: #21262d; color: #58a6ff; text-decoration: none; cursor: pointer; }
+  .btn.rev { color: #f0c674; }
+  .rev-box { display: none; margin-top: 8px; border-top: 1px dashed #30363d; padding-top: 8px; font-size: 13px; line-height: 1.7; }
+  .rev-box.open { display: block; }
+  .rev-box p { margin: 4px 0; color: #adbac7; }
+  .empty { text-align: center; color: #8b949e; padding: 40px 0; }
+  footer { text-align: center; color: #484f58; font-size: 11px; padding: 20px 0 30px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="hrow">
+    <h1 id="provTitle">省级景区详情 <span id="provSub"></span></h1>
+    <a class="back" href="index.html">← 返回全国地图</a>
+  </div>
+  <div class="toolbar">
+    <select id="lvSel"><option value="">全部等级</option><option value="5A">5A</option><option value="4A">4A</option></select>
+    <select id="citySel"><option value="">全部城市</option></select>
+    <input id="kw" type="search" placeholder="搜索景区名…">
+  </div>
+</header>
+<main>
+  <div class="stats" id="stats"></div>
+  <div id="list"></div>
+  <div class="empty" id="empty" style="display:none">没有符合条件的景区</div>
+</main>
+<footer>数据：文旅部公报A级景区名录 · 评价来自携程/大众点评等公开平台 · <a href="index.html" style="color:#58a6ff">全国旅游攻略地图</a></footer>
+<script>
+if ('serviceWorker' in navigator) { window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); }); }
+const $ = id => document.getElementById(id);
+let spots = [], prov = '';
+function q(name) { return new URLSearchParams(location.search).get(name) || ''; }
+function gaode(lat, lng, name) { return 'https://uri.amap.com/marker?position=' + lng + ',' + lat + '&name=' + encodeURIComponent(name); }
+function init() {
+  prov = q('p');
+  document.title = (prov ? prov : '省级') + '景区详情 | 全国旅游攻略地图';
+  $('provTitle').childNodes[0].textContent = (prov || '省级') + '景区详情 ';
+  fetch('data/national.json').then(r => r.json()).then(data => {
+    if (prov) {
+      spots = data.filter(x => x.p === prov);
+      if (!spots.length) { // 容错：不带"省"后缀也试一次
+        spots = data.filter(x => x.p.startsWith(prov) || prov.startsWith(x.p.slice(0, 2)));
+      }
+    } else { spots = data; }
+    const cities = [...new Set(spots.map(x => x.c).filter(Boolean))].sort();
+    cities.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; $('citySel').appendChild(o); });
+    render();
+  });
+  $('lvSel').onchange = render; $('citySel').onchange = render; $('kw').oninput = render;
+}
+function render() {
+  const lv = $('lvSel').value, city = $('citySel').value, kw = $('kw').value.trim().toLowerCase();
+  const rows = spots.filter(x => (!lv || x.l === lv) && (!city || x.c === city) && (!kw || x.n.toLowerCase().includes(kw)));
+  const a5 = spots.filter(x => x.l === '5A').length, a4 = spots.filter(x => x.l === '4A').length;
+  const free = spots.filter(x => (x.t || '').includes('免费')).length;
+  $('provSub').textContent = a5 + '家5A · ' + a4 + '家4A';
+  $('stats').innerHTML = '<div class="stat"><b>' + spots.length + '</b>A级景区</div>'
+    + '<div class="stat"><b>' + a5 + '</b>5A景区</div>'
+    + '<div class="stat"><b>' + a4 + '</b>4A景区</div>'
+    + '<div class="stat"><b>' + free + '</b>免费景区</div>'
+    + '<div class="stat"><b>' + rows.length + '</b>当前筛选</div>';
+  $('empty').style.display = rows.length ? 'none' : 'block';
+  const frag = document.createDocumentFragment();
+  rows.forEach(x => {
+    const card = document.createElement('div'); card.className = 'card';
+    const is5 = x.l === '5A';
+    card.innerHTML = '<div class="card-top"><span class="badge ' + (is5 ? 'b5' : 'b4') + '">' + (x.l || 'A') + '</span><h2></h2></div>'
+      + '<p class="meta"><span>📍 ' + (x.c || x.p) + '</span><span>🎫 ' + (x.t || '票价待核实') + '</span></p>'
+      + '<div class="acts"><a class="btn" target="_blank" rel="noopener" href="' + gaode(x.lat, x.lng, x.n) + '">🧭 高德导航</a>'
+      + (x.q ? '<button class="btn rev">💬 游客评价</button>' : '') + '</div>'
+      + (x.q ? '<div class="rev-box">' + x.q + '</div>' : '');
+    card.querySelector('h2').textContent = x.n;
+    const rb = card.querySelector('.rev-box');
+    if (rb) card.querySelector('.rev').onclick = () => rb.classList.toggle('open');
+    frag.appendChild(card);
+  });
+  const list = $('list'); list.innerHTML = ''; list.appendChild(frag);
+}
+init();
+</script>
+</body>
+</html>
