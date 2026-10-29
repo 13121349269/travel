@@ -4,11 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>全国旅游攻略地图 | 1700+景点·美食·住宿·真实评价</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Ccircle cx=%2216%22 cy=%2216%22 r=%2214%22 fill=%22%23a371f7%22/%3E%3Cpath d=%22M16 7l2.6 6.4L25 16l-6.4 2.6L16 25l-2.6-6.4L7 16l6.4-2.6z%22 fill=%22%23fff%22/%3E%3C/svg%3E">
+  <link rel="dns-prefetch" href="//webrd01.is.autonavi.com"><link rel="dns-prefetch" href="//webst01.is.autonavi.com"><link rel="preconnect" href="https://webrd01.is.autonavi.com" crossorigin>
 <meta name="description" content="全国旅游攻略地图：覆盖34省级行政区1700+点位，含5A/4A级景区、地方美食、住宿商圈与网红打卡地，附携程/马蜂窝等平台真实游客评价与高德导航。">
 <meta name="keywords" content="全国旅游攻略,旅游景点,5A景区,美食推荐,酒店住宿,自驾游,山西旅游,地图找景点">
 <meta property="og:title" content="全国旅游攻略地图 | 1700+景点·美食·住宿·真实评价">
 <meta property="og:description" content="地图找景点，一搜即达：全国1700+旅游点位+真实游客评价+一键高德导航。">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://travel.lovesummer.me/">
+<meta property="og:site_name" content="全国旅游攻略地图">
+<link rel="canonical" href="https://travel.lovesummer.me/">
 <meta name="theme-color" content="#0d1117">
 <link rel="stylesheet" href="vendor/leaflet.css" />
 <link rel="stylesheet" href="vendor/MarkerCluster.css" />
@@ -135,7 +140,7 @@
     <div class="side-head"><span class="handle"></span><button type="button" class="side-close" onclick="closeSidebar()">收起 ✕</button></div>
     <h2>📍 按地区选择</h2>
     <div id="statLine"></div>
-    <input id="searchBox" type="text" placeholder="🔍 搜索全国景点 / 美食 / 城市…" autocomplete="off">
+    <input id="searchBox" type="search" placeholder="🔍 搜索全国景点 / 美食 / 城市…" autocomplete="off" aria-label="搜索全国景点、美食、住宿与城市">
     <div class="cascade">
       <label for="provSel">省份</label>
       <select id="provSel" onchange="onProvinceChange()"><option value="">全国（不限）</option></select>
