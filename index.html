@@ -2312,7 +2312,7 @@ const CITY_CENTERS = {
   '临汾市': [36.08, 111.52], '运城市': [35.02, 110.90],
 };
 let currentType = 'all';
-let currentProv = '山西省';
+let currentProv = ''; // 默认全国，省筛选由用户触发
 let currentCity = '';
 let currentCounty = '';
 
@@ -2559,7 +2559,8 @@ function tagClassOf(spot) {
   return 'tag-' + spot.type;
 }
 
-function renderSpotList() {
+function renderSpotList() { // LIST_CAP_APPLIED
+
   const area = document.getElementById('spotArea');
   area.innerHTML = '';
   const placeholder = (html) => {
@@ -2583,9 +2584,13 @@ function renderSpotList() {
     .filter(s => !currentProv || spotProv(s) === currentProv)
     .filter(s => !currentCity || spotCity(s) === currentCity)
     .filter(s => !currentCounty || (currentCity === '运城市' && countyShort(s.county) === countyShort(currentCounty)));
+  const LIST_CAP = 300; // 全国模式下控制列表DOM规模
+  let totalShown = filtered.length;
+  if (!currentProv && filtered.length > LIST_CAP) filtered = filtered.slice(0, LIST_CAP);
   if (!filtered.length) { placeholder('<div style="font-size:26px;">🚧</div>该地区暂无收录点位<br>' +
       '目前已收录全国' + spots.length + '个点位 · 山西451家A级全量<br>' +
       '<a href="shanxi.html" style="color:#58a6ff;">查看山西总表 →</a>'); return; }
+  if (totalShown > filtered.length && area) setTimeout(() => { const tip = document.createElement('div'); tip.className = 'county-header'; tip.textContent = '⋯ 全国共' + totalShown + '个点位，已显示前' + filtered.length + '个，请用省份/类型筛选缩小范围'; area.appendChild(tip); }, 0);
 
   // 按县区/城市分组（保持数据源顺序），组内按 景点→美食→住宿→网红点 排序
   const groups = new Map();
