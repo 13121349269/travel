@@ -2533,16 +2533,21 @@ function wgs2gcj(lat, lng) { // WGS-84 → GCJ-02（高德瓦片坐标系，避�
   return [lat + dLat, lng + dLng];
 }
 
+let cityMap = {};
+function shortProv(p) { return (p || '').replace(/维吾尔|回族|壮族/g, '').replace(/自治区$/, '').replace(/省$/, '').replace(/市$/, ''); }
 function makeFullMarker(s) {
     const gc = wgs2gcj(s.lat, s.lng);
+    const cnCity = cityMap[s.p + '|' + s.c] || '';
+    const locTag = shortProv(s.p) + (cnCity && cnCity !== s.p ? '·' + cnCity : '');
+    const detailUrl = 'province.html?p=' + encodeURIComponent(s.p) + '&c=' + encodeURIComponent(s.c);
     const m = L.circleMarker(gc, { radius: 5, color: '#a371f7', weight: 1, fillColor: '#c9a0ff', fillOpacity: 0.9 });
     m.bindPopup('<div style="min-width:240px;padding:6px 2px;">' +
       '<div class="iw-title">' + s.n + '</div>' +
-      '<span class="iw-tag" style="' + (s.l === '5A' ? 'background:rgba(240,180,60,0.22);color:#f0b43c;border-color:rgba(240,180,60,0.45);font-weight:600;' : 'background:rgba(180,196,210,0.15);color:#b4c4d2;') + '">' + s.l + '</span> <span class="iw-tag">' + s.p + '</span>' +
+      '<span class="iw-tag" style="' + (s.l === '5A' ? 'background:rgba(240,180,60,0.22);color:#f0b43c;border-color:rgba(240,180,60,0.45);font-weight:600;' : 'background:rgba(180,196,210,0.15);color:#b4c4d2;') + '">' + s.l + '</span> <span class="iw-tag">' + locTag + '</span>' +
       '<div style="margin-top:4px;">门票：<span class="iw-price">' + s.t + '</span></div>' +
       (s.q ? '<div style="margin-top:6px;padding:5px 7px;background:rgba(163,113,247,0.10);border-left:2px solid #a371f7;border-radius:4px;font-size:12px;line-height:1.7;color:#b9c2cf;">' + s.q + '</div>' : '') +
       '<div class="iw-addr">数据来源：China Top Attractions 公开数据集（2026-08核验）</div>' +
-      '<div class="iw-nav"><a class="amap-link" href="https://uri.amap.com/marker?position=' + gc[1] + ',' + gc[0] + '&name=' + encodeURIComponent(s.n) + '" target="_blank">高德导航</a></div></div>', { maxWidth: 300 });
+      '<div class="iw-nav"><a class="amap-link" href="https://uri.amap.com/marker?position=' + gc[1] + ',' + gc[0] + '&name=' + encodeURIComponent(s.n) + '" target="_blank">高德导航</a> <a class="amap-link" href="' + detailUrl + '">同省更多 →</a></div></div>', { maxWidth: 300 });
     return m;
   }
   function rebuildFullLayer() {
@@ -2555,9 +2560,13 @@ function makeFullMarker(s) {
   if (on && !fullCluster && !fullLoading) {
     fullLoading = true; chk.disabled = true;
     try {
-      const r = await fetch('data/national.json');
+      const [r, cm] = await Promise.all([
+        fetch('data/national.json'),
+        fetch('data/city_map.json').then(x => x.ok ? x.json() : {}).catch(() => ({}))
+      ]);
       if (!r.ok) throw new Error('HTTP ' + r.status);
       fullList = await r.json();
+      cityMap = cm || {};
       fullCluster = L.markerClusterGroup({
         showCoverageOnHover: false, maxClusterRadius: 60,
         iconCreateFunction: function(c) {
