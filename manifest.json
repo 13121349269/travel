@@ -1,0 +1,21 @@
+{
+  "name": "全国旅游攻略地图",
+  "short_name": "旅游攻略",
+  "description": "地图找景点：全国1700+旅游点位、5A/4A全量图层、真实游客评价、一键高德导航。",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0d1117",
+  "theme_color": "#0d1117",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "山西总表", "url": "./shanxi.html" },
+    { "name": "运城详图", "url": "./map.html" },
+    { "name": "运城攻略", "url": "./guide.html" }
+  ]
+}
