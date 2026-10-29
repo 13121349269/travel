@@ -19,6 +19,9 @@
   .toolbar { max-width: 960px; margin: 10px auto 0; display: flex; gap: 8px; flex-wrap: wrap; }
   .toolbar select, .toolbar input { background: #21262d; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px; padding: 7px 10px; font-size: 16px; }
   .toolbar input { flex: 1; min-width: 140px; }
+  .type-bar { max-width: 960px; margin: 8px auto 0; padding: 0 12px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .tbtn { font-size: 12px; padding: 5px 12px; border-radius: 14px; border: 1px solid #30363d; background: #161b22; color: #8b949e; cursor: pointer; user-select: none; }
+  .tbtn.active { color: #f0c674; border-color: #f0c674; background: rgba(240,198,116,.08); }
   main { max-width: 960px; margin: 12px auto; padding: 0 12px; }
   .stats { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
   .stat { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 8px 14px; font-size: 12px; }
@@ -28,6 +31,7 @@
   .badge { flex-shrink: 0; font-size: 11px; font-weight: bold; border-radius: 5px; padding: 2px 7px; margin-top: 2px; }
   .b5 { background: rgba(240,198,116,.15); color: #f0c674; border: 1px solid #f0c674; }
   .b4 { background: rgba(139,148,158,.12); color: #c9d1d9; border: 1px solid #8b949e; }
+  .bf { background: rgba(255,123,58,.12); color: #ff7b3a; border: 1px solid #ff7b3a; }
   .card h2 { font-size: 15px; color: #e6edf3; flex: 1; }
   .meta { font-size: 12px; color: #8b949e; margin: 6px 0 0 0; display: flex; gap: 10px; flex-wrap: wrap; }
   .acts { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
@@ -51,6 +55,13 @@
     <select id="citySel"><option value="">全部城市</option></select>
     <input id="kw" type="search" placeholder="搜索景区名…">
   </div>
+  <div class="type-bar">
+    <span class="tbtn active" data-t="all">全部</span>
+    <span class="tbtn" data-t="scenic">🏛 景区</span>
+    <span class="tbtn" data-t="food">🍜 美食</span>
+    <span class="tbtn" data-t="stay">🏨 住宿</span>
+    <span class="tbtn" data-t="hot">📸 网红点</span>
+  </div>
 </header>
 <main>
   <div class="stats" id="stats"></div>
@@ -61,53 +72,85 @@
 <script>
 if ('serviceWorker' in navigator) { window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); }); }
 const $ = id => document.getElementById(id);
-let spots = [], prov = '';
+let spots = [], featured = [], curType = 'all', prov = '';
+const TYPE_LABEL = { food: '🍜 美食', stay: '🏨 住宿', hot: '📸 网红点' };
 function q(name) { return new URLSearchParams(location.search).get(name) || ''; }
 function gaode(lat, lng, name) { return 'https://uri.amap.com/marker?position=' + lng + ',' + lat + '&name=' + encodeURIComponent(name); }
 function init() {
   prov = q('p');
-  document.title = (prov ? prov : '省级') + '景区详情 | 全国旅游攻略地图';
-  $('provTitle').childNodes[0].textContent = (prov || '省级') + '景区详情 ';
+  document.title = (prov ? prov : '省级') + '旅游详情 | 全国旅游攻略地图';
+  $('provTitle').childNodes[0].textContent = (prov || '省级') + '旅游详情 ';
   fetch('data/national.json').then(r => r.json()).then(data => {
     if (prov) {
       spots = data.filter(x => x.p === prov);
-      if (!spots.length) { // 容错：不带"省"后缀也试一次
-        spots = data.filter(x => x.p.startsWith(prov) || prov.startsWith(x.p.slice(0, 2)));
-      }
+      if (!spots.length) spots = data.filter(x => x.p.startsWith(prov) || prov.startsWith(x.p.slice(0, 2)));
     } else { spots = data; }
     const cities = [...new Set(spots.map(x => x.c).filter(Boolean))].sort();
     cities.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; $('citySel').appendChild(o); });
+    return fetch('data/featured.json').then(r => r.json()).catch(() => []);
+  }).then(feat => {
+    featured = prov ? feat.filter(x => x.prov === prov) : feat;
     render();
   });
   $('lvSel').onchange = render; $('citySel').onchange = render; $('kw').oninput = render;
+  document.querySelectorAll('.tbtn').forEach(b => b.onclick = () => {
+    document.querySelectorAll('.tbtn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active'); curType = b.dataset.t;
+    if (curType !== 'all') { $('lvSel').value = ''; $('citySel').value = ''; }
+    render();
+  });
 }
 function render() {
   const lv = $('lvSel').value, city = $('citySel').value, kw = $('kw').value.trim().toLowerCase();
-  const rows = spots.filter(x => (!lv || x.l === lv) && (!city || x.c === city) && (!kw || x.n.toLowerCase().includes(kw)));
   const a5 = spots.filter(x => x.l === '5A').length, a4 = spots.filter(x => x.l === '4A').length;
   const free = spots.filter(x => (x.t || '').includes('免费')).length;
   $('provSub').textContent = a5 + '家5A · ' + a4 + '家4A';
+  let rows;
+  if (curType === 'all') {
+    rows = spots.filter(x => (!lv || x.l === lv) && (!city || x.c === city) && (!kw || x.n.toLowerCase().includes(kw)))
+      .map(x => ({ kind: 'spot', x }));
+    const fkw = x => !kw || x.name.toLowerCase().includes(kw);
+    featured.filter(x => x.type !== 'scenic' && fkw(x)).forEach(x => rows.push({ kind: 'feat', x }));
+  } else if (curType === 'scenic') {
+    rows = spots.filter(x => (!lv || x.l === lv) && (!city || x.c === city) && (!kw || x.n.toLowerCase().includes(kw))).map(x => ({ kind: 'spot', x }));
+  } else {
+    rows = featured.filter(x => x.type === curType && (!kw || x.name.toLowerCase().includes(kw))).map(x => ({ kind: 'feat', x }));
+  }
   $('stats').innerHTML = '<div class="stat"><b>' + spots.length + '</b>A级景区</div>'
     + '<div class="stat"><b>' + a5 + '</b>5A景区</div>'
     + '<div class="stat"><b>' + a4 + '</b>4A景区</div>'
     + '<div class="stat"><b>' + free + '</b>免费景区</div>'
+    + '<div class="stat"><b>' + featured.filter(x => x.type !== 'scenic').length + '</b>精选食宿网红</div>'
     + '<div class="stat"><b>' + rows.length + '</b>当前筛选</div>';
   $('empty').style.display = rows.length ? 'none' : 'block';
   const frag = document.createDocumentFragment();
-  rows.forEach(x => {
-    const card = document.createElement('div'); card.className = 'card';
-    const is5 = x.l === '5A';
-    card.innerHTML = '<div class="card-top"><span class="badge ' + (is5 ? 'b5' : 'b4') + '">' + (x.l || 'A') + '</span><h2></h2></div>'
-      + '<p class="meta"><span>📍 ' + (x.c || x.p) + '</span><span>🎫 ' + (x.t || '票价待核实') + '</span></p>'
-      + '<div class="acts"><a class="btn" target="_blank" rel="noopener" href="' + gaode(x.lat, x.lng, x.n) + '">🧭 高德导航</a>'
-      + (x.q ? '<button class="btn rev">💬 游客评价</button>' : '') + '</div>'
-      + (x.q ? '<div class="rev-box">' + x.q + '</div>' : '');
-    card.querySelector('h2').textContent = x.n;
-    const rb = card.querySelector('.rev-box');
-    if (rb) card.querySelector('.rev').onclick = () => rb.classList.toggle('open');
-    frag.appendChild(card);
-  });
+  rows.forEach(({ kind, x }) => frag.appendChild(kind === 'spot' ? spotCard(x) : featCard(x)));
   const list = $('list'); list.innerHTML = ''; list.appendChild(frag);
+}
+function spotCard(x) {
+  const is5 = x.l === '5A';
+  const card = document.createElement('div'); card.className = 'card';
+  card.innerHTML = '<div class="card-top"><span class="badge ' + (is5 ? 'b5' : 'b4') + '">' + (x.l || 'A') + '</span><h2></h2></div>'
+    + '<p class="meta"><span>📍 ' + (x.c || x.p) + '</span><span>🎫 ' + (x.t || '票价待核实') + '</span></p>'
+    + '<div class="acts"><a class="btn" target="_blank" rel="noopener" href="' + gaode(x.lat, x.lng, x.n) + '">🧭 高德导航</a>'
+    + (x.q ? '<button class="btn rev">💬 游客评价</button>' : '') + '</div>'
+    + (x.q ? '<div class="rev-box">' + x.q + '</div>' : '');
+  card.querySelector('h2').textContent = x.n;
+  const rb = card.querySelector('.rev-box');
+  if (rb) card.querySelector('.rev').onclick = () => rb.classList.toggle('open');
+  return card;
+}
+function featCard(x) {
+  const card = document.createElement('div'); card.className = 'card';
+  card.innerHTML = '<div class="card-top"><span class="badge bf">' + (TYPE_LABEL[x.type] || '📍') + '</span><h2></h2></div>'
+    + '<p class="meta"><span>📍 ' + (x.county || x.prov) + '</span>' + (x.price ? '<span>💰 ' + x.price + '</span>' : '') + (x.rating ? '<span>⭐ ' + x.rating + '</span>' : '') + '</p>'
+    + '<div class="acts"><a class="btn" target="_blank" rel="noopener" href="' + gaode(x.lat, x.lng, x.name) + '">🧭 高德导航</a>'
+    + (x.review ? '<button class="btn rev">💬 评价详情</button>' : '') + '</div>'
+    + (x.review ? '<div class="rev-box">' + x.review + '</div>' : '');
+  card.querySelector('h2').textContent = x.name;
+  const rb = card.querySelector('.rev-box');
+  if (rb) card.querySelector('.rev').onclick = () => rb.classList.toggle('open');
+  return card;
 }
 init();
 </script>
