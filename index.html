@@ -2603,7 +2603,8 @@ function renderSpotList() { // LIST_CAP_APPLIED
     const items = groups.get(county).sort((a, b) => TYPE_ORDER[a.type] - TYPE_ORDER[b.type]);
     const h = document.createElement('div');
     h.className = 'county-header';
-    h.textContent = '📍 ' + county + '（' + items.length + '）';
+    const gProv = !currentProv && spotProv(items[0]) ? spotProv(items[0]) + '·' : '';
+    h.textContent = '📍 ' + gProv + county + '（' + items.length + '）';
     area.appendChild(h);
     items.forEach(spot => appendSpotItem(area, spot, false));
   });
