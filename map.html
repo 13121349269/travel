@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>运城地区全域景点地图标注（55家A级景区全收录）- Leaflet + 高德瓦片</title>
   <meta name="description" content="运城55家A级景区地图标注全收录：4A×24、3A×19、2A×9、1A×1，附美食街、住宿圈与网红打卡点，真实评价+高德导航。">
   <meta property="og:title" content="运城全域景点地图 | 55家A级景区·美食住宿网红点全收录">
@@ -13,9 +13,9 @@
   <link rel="canonical" href="https://travel.lovesummer.me/map.html">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Ccircle cx=%2216%22 cy=%2216%22 r=%2214%22 fill=%22%23a371f7%22/%3E%3Cpath d=%22M16 7l2.6 6.4L25 16l-6.4 2.6L16 25l-2.6-6.4L7 16l6.4-2.6z%22 fill=%22%23fff%22/%3E%3C/svg%3E">
   <link rel="dns-prefetch" href="//webrd01.is.autonavi.com"><link rel="dns-prefetch" href="//webst01.is.autonavi.com"><link rel="preconnect" href="https://webrd01.is.autonavi.com" crossorigin>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+<link rel="stylesheet" href="vendor/leaflet.css" />
+<link rel="stylesheet" href="vendor/MarkerCluster.css" />
+<link rel="stylesheet" href="vendor/MarkerCluster.Default.css" />
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; background: #0d1117; color: #c9d1d9; font-family: "Microsoft YaHei", "PingFang SC", sans-serif; }
@@ -72,6 +72,39 @@
   .leaflet-bar a:hover { background: #21262d !important; }
   .stat-line { font-size: 11px; color: #8b949e; margin-bottom: 8px; padding: 6px 10px; background: rgba(88,166,255,0.05); border-radius: 4px; border: 1px solid rgba(88,166,255,0.15); }
   .stat-line strong { color: #f0c674; }
+  .side-head { display: none; }
+  .side-close { background: #21262d; border: 1px solid #30363d; color: #c9d1d9; border-radius: 999px; padding: 6px 14px; font-size: 12px; cursor: pointer; min-height: 36px; }
+  #sideToggle { display: none; }
+  #container { height: calc(100vh - 52px); height: calc(100dvh - 52px); }
+  /* ===== 移动端：全屏地图 + 底部抽屉侧栏 ===== */
+  @media (max-width: 860px) {
+    #header h1 { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #header .info { display: none; }
+    #container { flex-direction: column; }
+    #sidebar {
+      position: fixed; left: 0; right: 0; bottom: 0; width: 100%; max-height: 72vh; max-height: 72dvh;
+      border-right: none; border-top: 1px solid #30363d; border-radius: 14px 14px 0 0;
+      z-index: 1100; transform: translateY(105%); transition: transform .25s ease;
+      box-shadow: 0 -8px 24px rgba(0,0,0,0.5); padding-bottom: calc(12px + env(safe-area-inset-bottom));
+    }
+    #sidebar.open { transform: translateY(0); }
+    .side-head { display: flex; align-items: center; justify-content: space-between; margin: -4px 0 6px; }
+    .side-head .handle { width: 44px; height: 4px; border-radius: 2px; background: #30363d; display: block; }
+    #sideToggle {
+      display: flex; align-items: center; justify-content: center; position: fixed;
+      bottom: calc(18px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%);
+      z-index: 1050; background: #f0c674; color: #0d1117; border: none; border-radius: 999px;
+      padding: 0 28px; font-size: 14px; font-weight: bold; cursor: pointer;
+      min-height: 46px; box-shadow: 0 4px 14px rgba(0,0,0,0.55);
+    }
+    #sideToggle:active { background: #ffd98a; }
+    .leaflet-popup-content-wrapper { max-width: calc(100vw - 36px) !important; }
+    .leaflet-popup-content { max-width: calc(100vw - 52px) !important; }
+    .leaflet-control-zoom { display: none; }
+    #legend { bottom: calc(80px + env(safe-area-inset-bottom)); right: 10px; padding: 6px 10px; }
+    .filter-btn, .layer-btn { min-height: 36px; padding: 6px 14px; font-size: 12px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
 </head>
 <body>
@@ -85,6 +118,7 @@
 </div>
 <div id="container">
   <div id="sidebar">
+    <div class="side-head"><span class="handle"></span><button type="button" class="side-close" onclick="closeSidebar()">收起 ✕</button></div>
     <div class="stat-line">运城全市 <strong>55家</strong> A级景区（4A×24 / 3A×19 / 2A×9 / 1A×1）+ 美食/住宿/网红点</div>
     <div class="filter-bar">
       <span class="layer-btn active" onclick="switchLayer('vec',this)">标准图</span>
@@ -101,6 +135,7 @@
     <div id="spotList"></div>
   </div>
   <div id="map"></div>
+  <button id="sideToggle" type="button" onclick="toggleSidebar()">📍 景区列表</button>
   <div id="legend">
     <h3>图例</h3>
     <div class="legend-row"><span class="legend-dot" style="background:#ff6b6b;"></span> 4A级景区</div>
@@ -112,8 +147,8 @@
   </div>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script src="vendor/leaflet.js"></script>
+<script src="vendor/markercluster.js"></script>
 
 <script>
 // ============ 运城55家A级景区官方名单 + 美食/住宿/网红点 ============
@@ -640,6 +675,7 @@ function renderList(filter) {
         '<div class="meta">门票：<span class="price">' + spot.price + '</span> | <span class="rating">' + spot.rating + '</span></div>';
       div.onclick = function() {
         map.flyTo([spot.lat, spot.lng], 14, { duration: 0.8 });
+        if (window.innerWidth <= 860) closeSidebar(); // 手机上点景区自动收起抽屉看地图
         setTimeout(() => {
           const m = allMarkers.find(m => m.spotData.id === spot.id);
           if (m) {
@@ -668,6 +704,10 @@ function filterType(type, btn) {
   toShow.forEach(m => clusterGroup.addLayer(m));
 }
 
+// ============ 移动端抽屉交互 ============
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); }
+if (window.innerWidth <= 860) map.on('click', closeSidebar);
 // ============ 初始：飞往盐湖 ============
 setTimeout(() => {
   map.flyTo([34.98, 110.89], 11, { duration: 1 });

@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>运城食宿攻略 - 真人评价·住宿·美食·网红点</title>
   <meta name="description" content="运城食宿攻略：3大住宿圈7家酒店、5条小吃街、10道特色美食、14个网红打卡点，全部附真人评价与导航。">
   <meta property="og:title" content="运城食宿攻略 | 住宿·美食·网红点·真人评价">
@@ -45,7 +45,12 @@
   .stat-box { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 10px 16px; text-align: center; flex: 1; min-width: 140px; }
   .stat-box .num { font-size: 20px; font-weight: bold; color: #f0c674; }
   .stat-box .lbl { font-size: 11px; color: #8b949e; }
-  @media (max-width: 768px) { .container { padding: 10px; } table { font-size: 11px; } th, td { padding: 5px 6px; } }
+  @media (max-width: 768px) {
+    .container { padding: 10px; } table { font-size: 11px; } th, td { padding: 5px 6px; }
+    h1 { font-size: 20px; }
+    .container table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+    .stat-row select, .container select, .container input { font-size: 16px; } /* 16px防iOS聚焦放大 */
+  }
 </style>
 </head>
 <body>
