@@ -48,6 +48,7 @@
 <header>
   <div class="hrow">
     <h1 id="provTitle">省级景区详情 <span id="provSub"></span></h1>
+    <a id="backProv" class="back" style="display:none" href="province.html">← 全省</a>
     <a class="back" href="index.html">← 返回全国地图</a>
   </div>
   <div class="toolbar">
@@ -72,21 +73,28 @@
 <script>
 if ('serviceWorker' in navigator) { window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); }); }
 const $ = id => document.getElementById(id);
-let spots = [], featured = [], curType = 'all', prov = '';
+let spots = [], featured = [], curType = 'all', prov = '', cityParam = '', cityMap = {};
 const TYPE_LABEL = { food: '🍜 美食', stay: '🏨 住宿', hot: '📸 网红点' };
 function q(name) { return new URLSearchParams(location.search).get(name) || ''; }
 function gaode(lat, lng, name) { return 'https://uri.amap.com/marker?position=' + lng + ',' + lat + '&name=' + encodeURIComponent(name); }
 function init() {
   prov = q('p');
-  document.title = (prov ? prov : '省级') + '旅游详情 | 全国旅游攻略地图';
-  $('provTitle').childNodes[0].textContent = (prov || '省级') + '旅游详情 ';
-  fetch('data/national.json').then(r => r.json()).then(data => {
+  cityParam = q('c');
+  document.title = (prov ? prov + (cityParam ? '·' + cityParam : '') : '省级') + '旅游详情 | 全国旅游攻略地图';
+  $('provTitle').childNodes[0].textContent = (prov || '省级') + (cityParam ? ' · ' + cityParam : '') + '旅游详情 ';
+  if (prov) { $('backProv').style.display = 'inline'; $('backProv').href = 'province.html?p=' + encodeURIComponent(prov); }
+  fetch('data/city_map.json').then(r => r.json()).catch(() => ({})).then(cm => {
+    cityMap = cm || {};
+    return fetch('data/national.json').then(r => r.json());
+  }).then(data => {
     if (prov) {
       spots = data.filter(x => x.p === prov);
       if (!spots.length) spots = data.filter(x => x.p.startsWith(prov) || prov.startsWith(x.p.slice(0, 2)));
     } else { spots = data; }
-    const cities = [...new Set(spots.map(x => x.c).filter(Boolean))].sort();
+    const cn = x => cityMap[x.p + '|' + x.c] || x.c || '';
+    const cities = [...new Set(spots.map(cn).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'zh'));
     cities.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; $('citySel').appendChild(o); });
+    if (cityParam) $('citySel').value = cityParam;
     return fetch('data/featured.json').then(r => r.json()).catch(() => []);
   }).then(feat => {
     featured = prov ? feat.filter(x => x.prov === prov) : feat;
@@ -96,25 +104,29 @@ function init() {
   document.querySelectorAll('.tbtn').forEach(b => b.onclick = () => {
     document.querySelectorAll('.tbtn').forEach(x => x.classList.remove('active'));
     b.classList.add('active'); curType = b.dataset.t;
-    if (curType !== 'all') { $('lvSel').value = ''; $('citySel').value = ''; }
+    if (curType !== 'all') { $('lvSel').value = ''; }
     render();
   });
 }
 function render() {
   const lv = $('lvSel').value, city = $('citySel').value, kw = $('kw').value.trim().toLowerCase();
+  const cnCity = x => cityMap[x.p + '|' + x.c] || x.c || '';
+  const cMatch = x => !city || cnCity(x) === city;
+  const cityBase = (city || '').replace(/市$/, '');
+  const featCity = x => !cityBase || (x.county || '').includes(cityBase) || (x.addr || '').includes(cityBase);
   const a5 = spots.filter(x => x.l === '5A').length, a4 = spots.filter(x => x.l === '4A').length;
   const free = spots.filter(x => (x.t || '').includes('免费')).length;
   $('provSub').textContent = a5 + '家5A · ' + a4 + '家4A';
   let rows;
   if (curType === 'all') {
-    rows = spots.filter(x => (!lv || x.l === lv) && (!city || x.c === city) && (!kw || x.n.toLowerCase().includes(kw)))
+    rows = spots.filter(x => (!lv || x.l === lv) && cMatch(x) && (!kw || x.n.toLowerCase().includes(kw)))
       .map(x => ({ kind: 'spot', x }));
     const fkw = x => !kw || x.name.toLowerCase().includes(kw);
-    featured.filter(x => x.type !== 'scenic' && fkw(x)).forEach(x => rows.push({ kind: 'feat', x }));
+    if (!lv) featured.filter(x => x.type !== 'scenic' && fkw(x) && featCity(x)).forEach(x => rows.push({ kind: 'feat', x }));
   } else if (curType === 'scenic') {
-    rows = spots.filter(x => (!lv || x.l === lv) && (!city || x.c === city) && (!kw || x.n.toLowerCase().includes(kw))).map(x => ({ kind: 'spot', x }));
+    rows = spots.filter(x => (!lv || x.l === lv) && cMatch(x) && (!kw || x.n.toLowerCase().includes(kw))).map(x => ({ kind: 'spot', x }));
   } else {
-    rows = featured.filter(x => x.type === curType && (!kw || x.name.toLowerCase().includes(kw))).map(x => ({ kind: 'feat', x }));
+    rows = featured.filter(x => x.type === curType && (!kw || x.name.toLowerCase().includes(kw)) && featCity(x)).map(x => ({ kind: 'feat', x }));
   }
   $('stats').innerHTML = '<div class="stat"><b>' + spots.length + '</b>A级景区</div>'
     + '<div class="stat"><b>' + a5 + '</b>5A景区</div>'
@@ -131,7 +143,7 @@ function spotCard(x) {
   const is5 = x.l === '5A';
   const card = document.createElement('div'); card.className = 'card';
   card.innerHTML = '<div class="card-top"><span class="badge ' + (is5 ? 'b5' : 'b4') + '">' + (x.l || 'A') + '</span><h2></h2></div>'
-    + '<p class="meta"><span>📍 ' + (x.c || x.p) + '</span><span>🎫 ' + (x.t || '票价待核实') + '</span></p>'
+    + '<p class="meta"><span>📍 ' + (cityMap[x.p + '|' + x.c] || x.p) + '</span><span>🎫 ' + (x.t || '票价待核实') + '</span></p>'
     + '<div class="acts"><a class="btn" target="_blank" rel="noopener" href="' + gaode(x.lat, x.lng, x.n) + '">🧭 高德导航</a>'
     + (x.q ? '<button class="btn rev">💬 游客评价</button>' : '') + '</div>'
     + (x.q ? '<div class="rev-box">' + x.q + '</div>' : '');
