@@ -2485,7 +2485,7 @@ function makeFullMarker(s) {
     const m = L.circleMarker(gc, { radius: 5, color: '#a371f7', weight: 1, fillColor: '#c9a0ff', fillOpacity: 0.9 });
     m.bindPopup('<div style="min-width:240px;padding:6px 2px;">' +
       '<div class="iw-title">' + s.n + '</div>' +
-      '<span class="iw-tag">' + s.l + '</span> <span class="iw-tag">' + s.p + '</span>' +
+      '<span class="iw-tag" style="' + (s.l === '5A' ? 'background:rgba(240,180,60,0.22);color:#f0b43c;border-color:rgba(240,180,60,0.45);font-weight:600;' : 'background:rgba(180,196,210,0.15);color:#b4c4d2;') + '">' + s.l + '</span> <span class="iw-tag">' + s.p + '</span>' +
       '<div style="margin-top:4px;">门票：<span class="iw-price">' + s.t + '</span></div>' +
       (s.q ? '<div style="margin-top:6px;padding:5px 7px;background:rgba(163,113,247,0.10);border-left:2px solid #a371f7;border-radius:4px;font-size:12px;line-height:1.7;color:#b9c2cf;">' + s.q + '</div>' : '') +
       '<div class="iw-addr">数据来源：China Top Attractions 公开数据集（2026-08核验）</div>' +
