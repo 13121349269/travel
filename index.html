@@ -2367,6 +2367,10 @@ function spotCity(s) {
 
 const provSel = document.getElementById('provSel');
 const citySel = document.getElementById('citySel');
+function updateProvDetailLink() {
+  const p = provSel.value, c = citySel.value || '';
+  document.getElementById('provDetailLink').href = 'province.html' + (p ? '?p=' + encodeURIComponent(p) + (c ? '&c=' + encodeURIComponent(c) : '') : '');
+}
 const countySel = document.getElementById('countySel');
 let divisionData = null;
 let divisionFetchStarted = false;
@@ -2426,7 +2430,7 @@ function findProvince(name) {
 
 function onProvinceChange(fly) {
   currentProv = provSel.value;
-  document.getElementById('provDetailLink').href = currentProv ? 'province.html?p=' + encodeURIComponent(currentProv) : 'province.html';
+  updateProvDetailLink();
   currentCity = ''; currentCounty = '';
   if (fullCluster) rebuildFullLayer();
   countySel.innerHTML = '<option value="">全部区县</option>';
@@ -2453,6 +2457,7 @@ function onProvinceChange(fly) {
 }
 
 function onCityChange() {
+  updateProvDetailLink();
   currentCity = citySel.value;
   currentCounty = '';
   countySel.innerHTML = '<option value="">全部区县</option>';
