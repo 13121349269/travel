@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>山西省全域旅游景点总表</title>
-  <meta name="description" content="山西省451家A级景区总表，按太原、大同、晋中等11地市分组，支持等级/城市筛选，附真实游客评价。">
-  <meta property="og:title" content="山西省A级景区总表 | 451家·11地市分组·等级筛选">
-  <meta property="og:description" content="山西省451家A级景区总表，按太原、大同、晋中等11地市分组，支持等级/城市筛选，附真实游客评价。">
+<title>全国A级景区总表（含山西451家全量） | 全国旅游攻略地图</title>
+  <meta name="description" content="全国1310家A级景区总表：山西451家全量（含运城55家明细），其他31省按市分组，支持等级/城市筛选，附真实游客评价与导航。">
+  <meta property="og:title" content="全国A级景区总表 | 1310家·31省分组·等级筛选·评价导航">
+  <meta property="og:description" content="全国1310家A级景区总表：山西451家全量（含运城55家明细），其他31省按市分组，支持等级/城市筛选，附真实游客评价与导航。">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://travel.lovesummer.me/shanxi.html">
   <meta property="og:site_name" content="全国旅游攻略地图">
@@ -14,7 +14,7 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="山西省A级景区总表 | 451家·11地市分组·等级筛选">
+<meta name="twitter:title" content="全国A级景区总表 | 1310家·31省分组·等级筛选·评价导航">
 <meta name="twitter:description" content="山西省451家A级景区总表，支持等级/城市筛选，附真实游客评价。">
 <meta name="twitter:image" content="https://travel.lovesummer.me/og-image.png">
   <link rel="canonical" href="https://travel.lovesummer.me/shanxi.html">
@@ -113,11 +113,11 @@
     </div>
     <div id="resultLine">当前可见 <strong id="resultCount">451</strong> 家景区</div>
     <button class="reset-btn" type="button" onclick="resetCascade()">重置为全部</button>
-    <p class="side-note">已完整收录：山西省451家A级景区（运城55家全部展开明细）。其他省份选择后显示占位提示，数据陆续补充中。省市区县划分参考开源行政区划库 china-division。</p>
+    <p class="side-note">山西451家全量静态收录（运城55家明细）；选择其他省份动态加载全国1310家A级景区（含票价、游客评价、高德导航）。省市区县划分参考开源行政区划库 china-division。</p>
   </aside>
   <div class="container" id="main">
-  <h1>山西省全域旅游景点总表</h1>
-  <p class="subtitle">数据来源：山西省文旅厅《山西省A级旅游景区名录（截至2025.1）》| 全省共451家A级景区</p>
+  <h1>全国A级景区总表 <span style="font-size:13px;color:#8b949e;">山西451家全量 · 全国1310家动态加载</span></h1>
+  <p class="subtitle">山西451家静态全量（来源：山西省文旅厅名录 2025.1）+ 全国31省动态数据（来源：文旅部公报A级名录，含游客评价与导航）</p>
 
   <div class="summary">
     <div class="summary-card"><div class="num">12</div><div class="label">5A级景区</div></div>
@@ -145,8 +145,10 @@
     </label>
   </div>
 
+  <div id="natSections"></div>
+
   <!-- 太原市 -->
-  <div class="city-section" data-city="太原">
+  <div class="city-section" data-city="太原" id="staticSections">
     <div class="city-header" onclick="toggleSection(this)">太原市（34家）<span class="count">5A×1 / 4A×11 / 3A×21 / 2A×1</span></div>
     <table><thead><tr><th>序号</th><th>景区名称</th><th>等级</th><th>核心看点</th></tr></thead><tbody>
       <tr><td>1</td><td>晋祠天龙山景区</td><td class="level-5A">5A</td><td>晋国宗祠园林，圣母殿彩塑，难老泉</td></tr>
@@ -440,14 +442,14 @@
   <div id="noDataPanel" role="status">
     <div class="big">🚧</div>
     <h3><span class="prov-name"></span> 景区数据整理中</h3>
-    <p>本工具目前已完整收录 <strong style="color:#f0c674;">山西省451家</strong> A级景区（运城55家全部展开明细）。其他省份的景区名录正在陆续整理，敬请期待。</p>
+    <p>该地区暂无收录数据。目前已收录 <strong style="color:#f0c674;">山西451家全量 + 全国31省1310家</strong> A级景区。</p>
     <a class="cta" href="#" onclick="resetCascade();return false;">← 回到全国视图</a>
   </div>
 
   <footer>
-    <p>数据截至2025年1月 | 来源：山西省文化和旅游厅《山西省A级旅游景区名录》</p>
+    <p>山西数据截至2025年1月（山西省文旅厅名录）| 全国31省数据来源文旅部公报A级名录，评价来自携程/大众点评等公开平台</p>
     <p>运城市52家景区已全部展开标注（黄色左边框）| 评分与票价信息为携程/同程/美团多平台交叉核实</p>
-    <p style="margin-top:8px;color:#f0c674;">>> 重点关注：运城景点地图与食宿攻略请见配套文件</p>
+    <p style="margin-top:8px;color:#f0c674;">>> 运城详图见 <a href="map.html" style="color:#58a6ff;">运城景点地图</a> · 食宿见 <a href="guide.html" style="color:#58a6ff;">运城攻略</a> · 食宿网红专题见 <a href="taste.html" style="color:#58a6ff;">全国专题</a></p>
   </footer>
 </div>
 </div>
@@ -563,6 +565,78 @@ function countRows(section) {
   return n;
 }
 
+function isStatic(s) { return !s.closest('#natSections'); }
+
+// ============ 全国 A 级景区动态表（national.json） ============
+let natCache = null, cityMapCache = null;
+function renderNational(prov, city, county) {
+  const box = document.getElementById('natSections');
+  const panel = document.getElementById('noDataPanel');
+  box.innerHTML = '<div style="text-align:center;color:#8b949e;padding:40px 0;font-size:13px;">📡 加载' + prov + 'A级景区数据中…</div>';
+  const ready = (data, cm) => {
+    let rows = data.filter(x => x.p === prov);
+    if (!rows.length) {
+      box.innerHTML = '';
+      panel.style.display = 'block';
+      panel.querySelector('.prov-name').textContent = prov + (city ? ' · ' + city : '');
+      document.getElementById('resultCount').textContent = '0';
+      return;
+    }
+    const cn = x => cm[x.p + '|' + x.c] || x.c || '';
+    if (city) rows = rows.filter(x => cn(x) === city);
+    const groups = new Map();
+    rows.forEach(x => { const c = cn(x) || '其他'; if (!groups.has(c)) groups.set(c, []); groups.get(c).push(x); });
+    let html = '';
+    [...groups.keys()].sort((a, b) => groups.get(b).length - groups.get(a).length).forEach(c => {
+      const items = groups.get(c);
+      const n5 = items.filter(x => x.l === '5A').length, n4 = items.filter(x => x.l === '4A').length;
+      const cnt = (n5 ? '5A×' + n5 + ' ' : '') + (n4 ? ' / 4A×' + n4 : '');
+      html += '<div class="city-section" data-city="' + c.replace(/市$/, '') + '">'
+        + '<div class="city-header" onclick="toggleSection(this)">' + c + '（' + items.length + '家）<span class="count">' + cnt + '</span></div>'
+        + '<table><thead><tr><th>序号</th><th>景区名称</th><th>等级</th><th>票价与评价</th></tr></thead><tbody>';
+      items.forEach((x, i) => {
+        html += '<tr><td>' + (i + 1) + '</td>'
+          + '<td><a target="_blank" rel="noopener" style="color:#58a6ff;text-decoration:none;" href="https://uri.amap.com/marker?position=' + x.lng + ',' + x.lat + '&name=' + encodeURIComponent(x.n) + '">' + x.n + '</a></td>'
+          + '<td class="level-' + (x.l || 'A') + '">' + (x.l || '—') + '</td>'
+          + '<td>' + (x.t || '票价待核实')
+          + (x.q ? '<div style="margin-top:6px;font-size:12px;color:#adbac7;line-height:1.7;border-top:1px dashed #30363d;padding-top:6px;">' + x.q + '</div>' : '')
+          + '</td></tr>';
+      });
+      html += '</tbody></table></div>';
+    });
+    box.innerHTML = html;
+    // 更新统计卡
+    const lv = l => rows.filter(x => (x.l || '') === l).length;
+    const nums = document.querySelectorAll('.summary .num');
+    if (nums.length >= 5) {
+      nums[0].textContent = lv('5A'); nums[1].textContent = lv('4A');
+      nums[2].textContent = lv('3A'); nums[3].textContent = lv('2A');
+      nums[4].textContent = rows.length;
+    }
+    document.querySelectorAll('.summary .label').forEach((el, i) => {
+      if (i === 4) el.textContent = prov + '总计';
+    });
+    document.getElementById('resultCount').textContent = rows.length;
+    // 复用全局筛选：等级 / 搜索 / 区县
+    const level = document.getElementById('levelFilter').value;
+    const kw = document.getElementById('searchInput').value.toLowerCase();
+    box.querySelectorAll('tbody tr').forEach(row => {
+      let show = true;
+      if (level && !(row.cells[2] && row.cells[2].textContent.includes(level))) show = false;
+      if (show && kw && !row.textContent.toLowerCase().includes(kw)) show = false;
+      if (show && county && !row.textContent.includes(countyShort(county))) show = false;
+      row.style.display = show ? '' : 'none';
+    });
+    box.querySelectorAll('.city-section').forEach(s => { s.style.display = countRows(s) ? '' : 'none'; });
+  };
+  if (natCache && cityMapCache) ready(natCache, cityMapCache);
+  else Promise.all([
+    fetch('data/national.json').then(r => r.json()),
+    fetch('data/city_map.json').then(r => r.json()).catch(() => ({}))
+  ]).then(([d, cm]) => { natCache = d; cityMapCache = cm; ready(d, cm); })
+    .catch(() => { box.innerHTML = '<div style="text-align:center;color:#f85149;padding:40px 0;">数据加载失败，请刷新重试</div>'; });
+}
+
 function applyCascade() {
   const prov = provSel.value, city = citySel.value, county = countySel.value;
   const sections = document.querySelectorAll('.city-section');
@@ -570,23 +644,22 @@ function applyCascade() {
   const panel = document.getElementById('noDataPanel');
   const filterBar = document.getElementById('filterBar');
 
-  // 非山西省：显示占位面板
+  // 非山西省：动态渲染全国 A 级景区表
   if (prov && prov !== '山西省') {
-    sections.forEach(s => s.style.display = 'none');
-    summary.style.display = 'none';
-    if (filterBar) filterBar.style.display = 'none';
-    panel.style.display = 'block';
-    const loc = prov + (city ? ' · ' + city : '') + (county ? ' · ' + county : '');
-    panel.querySelector('.prov-name').textContent = loc;
-    document.getElementById('resultCount').textContent = '0';
+    sections.forEach(s => { if (isStatic(s)) s.style.display = 'none'; });
+    if (filterBar) filterBar.style.display = '';
+    panel.style.display = 'none';
+    renderNational(prov, city, county);
     return;
   }
   panel.style.display = 'none';
   summary.style.display = '';
   if (filterBar) filterBar.style.display = '';
+  document.getElementById('natSections').innerHTML = '';
 
   let total = 0;
   sections.forEach(s => {
+    if (!isStatic(s)) { s.style.display = 'none'; return; }
     let showSection = true;
     if (city && (s.dataset.city + '市') !== city && s.dataset.city !== city) showSection = false;
     if (showSection && county) {
