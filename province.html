@@ -81,6 +81,7 @@
   <div class="toolbar">
     <select id="provJump"><option value="">切换省份…</option></select>
     <select id="lvSel"><option value="">全部等级</option><option value="5A">5A</option><option value="4A">4A</option></select>
+    <select id="sortSel"><option value="">默认排序</option><option value="rate">⭐ 评分优先</option></select>
     <select id="citySel"><option value="">全部城市</option></select>
     <input id="kw" type="search" placeholder="搜索景区名…">
   </div>
@@ -145,7 +146,7 @@ function init() {
     $('seoIntro').textContent = '数据加载失败，请检查网络后刷新重试。';
     $('seoIntro').style.color = '#f85149';
   });
-  $('lvSel').onchange = rebuild; $('citySel').onchange = rebuild; $('kw').oninput = rebuild;
+  $('lvSel').onchange = rebuild; $('citySel').onchange = rebuild; $('kw').oninput = rebuild; $('sortSel').onchange = rebuild;
   $('moreBtn').onclick = renderMore;
   document.querySelectorAll('.type-bar .tbtn').forEach(b => b.onclick = () => {
     document.querySelectorAll('.tbtn').forEach(x => x.classList.remove('active'));
@@ -229,6 +230,7 @@ function buildRows() {
   } else {
     rows = featured.filter(x => x.type === curType && (!kw || x.name.toLowerCase().includes(kw)) && featCity(x)).map(x => ({ kind: 'feat', x }));
   }
+  if ($('sortSel').value === 'rate') rows = rows.slice().sort((a, b) => (b.kind === 'spot' ? rate(b.x) : 0) - (a.kind === 'spot' ? rate(a.x) : 0) || (a.kind === 'spot' ? -1 : 1));
   $('stats').innerHTML = '<div class="stat"><b>' + spots.length + '</b>A级景区</div>'
     + '<div class="stat"><b>' + a5 + '</b>5A景区</div>'
     + '<div class="stat"><b>' + a4 + '</b>4A景区</div>'
@@ -238,11 +240,12 @@ function buildRows() {
   $('empty').style.display = rows.length ? 'none' : 'block';
   lastRows = rows;
 }
+function rate(x) { const m = (x.q || '').match(/⭐(\d\.\d)/); return m ? parseFloat(m[1]) : 0; }
 function spotCard(x) {
   const is5 = x.l === '5A';
   const card = document.createElement('div'); card.className = 'card';
   card.innerHTML = '<div class="card-top"><span class="badge ' + (is5 ? 'b5' : 'b4') + '">' + (x.l || 'A') + '</span><h2></h2></div>'
-    + '<p class="meta"><span>📍 ' + (cityMap[x.p + '|' + x.c] || x.p) + '</span><span>🎫 ' + (x.t || '票价待核实') + '</span></p>'
+    + '<p class="meta"><span>📍 ' + (cityMap[x.p + '|' + x.c] || x.p) + '</span><span>🎫 ' + (x.t || '票价待核实') + '</span>' + (rate(x) ? '<span>⭐ <b style="color:#f0c674">' + rate(x) + '</b></span>' : '') + '</p>'
     + '<div class="acts"><a class="btn" target="_blank" rel="noopener" href="' + gaode(x.lat, x.lng, x.n) + '">🧭 高德导航</a>'
     + (x.q ? '<button class="btn rev">💬 游客评价</button>' : '') + '</div>'
     + (x.q ? '<div class="rev-box">' + x.q + '</div>' : '');

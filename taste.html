@@ -106,6 +106,7 @@
     </select>
   </div>
   <div id="provChips" class="chips"></div>
+  <div class="chips show" id="themeChips" aria-label="主题筛选"></div>
   <div class="grid" id="list" aria-busy="true">
     <div class="sk"></div><div class="sk"></div><div class="sk"></div><div class="sk"></div>
   </div>
@@ -128,7 +129,7 @@ function shortProv(p) { return (p || '').replace(/(维吾尔|回族|壮族)?自�
 function curList() {
   let rows = all.filter(x => x.type === curT);
   if (curProv) rows = rows.filter(x => x.prov === curProv);
-  if (kw) { const k = kw.toLowerCase(); rows = rows.filter(x => ((x.name || '') + ' ' + (x.county || '') + ' ' + (x.addr || '')).toLowerCase().includes(k)); }
+  if (kw) { const k = kw.toLowerCase(); rows = rows.filter(x => ((x.name || '') + ' ' + (x.county || '') + ' ' + (x.addr || '') + ' ' + (x.review || '')).toLowerCase().includes(k)); }
   if (sort === 'rating') rows = rows.slice().sort((a, b) => ratingNum(b) - ratingNum(a));
   else if (sort === 'prov') rows = rows.slice().sort((a, b) => (a.prov || '').localeCompare(b.prov || '', 'zh'));
   return rows;
@@ -233,6 +234,21 @@ function buildProvChips() {
   provs.forEach(p => add(shortProv(p) + ' ' + all.filter(x => x.type === curT && x.prov === p).length, p));
   box.classList.add('show');
 }
+const THEMES = [['🏯 古建', '古建'], ['🏮 古镇', '古镇'], ['🐣 亲子', '娃'], ['♨️ 温泉', '温泉'], ['🚶 徒步', '徒步'], ['🏖 海滨', '海']];
+function buildThemeChips() {
+  const box = document.getElementById('themeChips');
+  box.innerHTML = '<span style="font-size:12px;color:#8b949e;align-self:center;">主题：</span>';
+  const cur = kw;
+  THEMES.forEach(([label, t]) => {
+    const n = all.filter(x => x.type === curT && (x.review || '').includes(t)).length;
+    if (!n) return;
+    const c = document.createElement('span');
+    c.className = 'chip' + (cur === t ? ' active' : '');
+    c.textContent = label + ' ' + n;
+    c.onclick = () => { const v = (cur === t ? '' : t); document.getElementById('kw').value = v; kw = v; resetAndRender(); buildThemeChips(); };
+    box.appendChild(c);
+  });
+}
 function applyType(t) {
   curT = TYPE[t] ? t : 'food';
   document.title = TYPE[curT].title + ' | 全国旅游攻略地图';
@@ -241,11 +257,12 @@ function applyType(t) {
   document.querySelectorAll('.tbtn').forEach(b => { const on = b.dataset.t === curT; b.classList.toggle('active', on); b.setAttribute('aria-selected', on); });
   curProv = '';
   buildProvChips();
+  buildThemeChips();
   resetAndRender();
   try { history.replaceState(null, '', location.pathname + '?t=' + curT); } catch (e) {}
 }
 document.querySelectorAll('.tbtn').forEach(b => b.onclick = () => applyType(b.dataset.t));
-document.getElementById('kw').addEventListener('input', function() { kw = this.value.trim(); resetAndRender(); });
+document.getElementById('kw').addEventListener('input', function() { kw = this.value.trim(); resetAndRender(); buildThemeChips(); });
 document.getElementById('sortSel').onchange = function() { sort = this.value; resetAndRender(); };
 document.getElementById('more').onclick = renderPage;
 
