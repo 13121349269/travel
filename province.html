@@ -198,6 +198,18 @@ function featCard(x) {
   return card;
 }
 init();
+
+// ===== 返回顶部 =====
+(function() {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.setAttribute('aria-label', '返回顶部');
+  btn.textContent = '↑';
+  btn.style.cssText = 'position:fixed;right:14px;bottom:96px;width:42px;height:42px;border-radius:50%;background:#21262d;border:1px solid #30363d;color:#c9d1d9;font-size:17px;display:none;z-index:1200;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.4);';
+  btn.onclick = function() { window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  document.body.appendChild(btn);
+  window.addEventListener('scroll', function() { btn.style.display = window.scrollY > 400 ? 'block' : 'none'; }, { passive: true });
+})();
 </script>
 </body>
 </html>

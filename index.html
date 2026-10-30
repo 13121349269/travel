@@ -51,6 +51,12 @@
   #searchBox { width: 100%; margin: 0 0 10px; padding: 8px 12px; background: #161b22; color: #c9d1d9;
     border: 1px solid #30363d; border-radius: 6px; font-size: 13px; outline: none; }
   #searchBox:focus { border-color: #58a6ff; }
+  #searchChips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
+  .chip { padding: 4px 11px; background: #21262d; border: 1px solid #30363d; border-radius: 20px; font-size: 12px; color: #c9d1d9; cursor: pointer; white-space: nowrap; transition: border-color .15s, color .15s; }
+  .chip:hover { border-color: #58a6ff; color: #58a6ff; }
+  .chip.chip-clear { background: #30363d; }
+  #backTop { position: fixed; right: 14px; bottom: 96px; width: 42px; height: 42px; border-radius: 50%; background: #21262d; border: 1px solid #30363d; color: #c9d1d9; font-size: 17px; display: none; z-index: 1200; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,.4); }
+  #backTop.show { display: block; }
   .prov-mini { font-size: 10px; color: #8b949e; margin-left: 6px; }
   .tag-scenic { background: rgba(88,166,255,0.15); color: #58a6ff; border-color: rgba(88,166,255,0.35); }
   .full-toggle { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #c9a0ff; background: rgba(163,113,247,0.08); border: 1px solid rgba(163,113,247,0.3); border-radius: 6px; padding: 8px 10px; margin-top: 10px; cursor: pointer; user-select: none; }
@@ -161,6 +167,7 @@
     <h2>📍 按地区选择</h2>
     <div id="statLine"></div>
     <input id="searchBox" type="search" placeholder="🔍 搜索全国景点 / 美食 / 城市…" autocomplete="off" aria-label="搜索全国景点、美食、住宿与城市">
+  <div id="searchChips" aria-label="快捷搜索"></div>
     <div class="cascade">
       <label for="provSel">省份</label>
       <select id="provSel" onchange="onProvinceChange()"><option value="">全国（不限）</option></select>
@@ -2626,13 +2633,17 @@ function renderSpotList() { // LIST_CAP_APPLIED
   let filtered;
   if (searchQuery) {
     const q = searchQuery.toLowerCase();
-    filtered = spots.filter(s => ((s.name || '') + ' ' + (s.county || '') + ' ' + (s.addr || '') + ' ' + (s.prov || '') + ' ' + (s.tags || []).join(' ')).toLowerCase().includes(q));
+    const extras = searchPinyinExtras(searchQuery); // 拼音城市命中 → 追加中文名词元
+    const terms = [q].concat(extras.map(function(e){ return e.toLowerCase(); }));
+    const hay = (s) => ((s.name || '') + ' ' + (s.county || '') + ' ' + (s.addr || '') + ' ' + (s.prov || '') + ' ' + (s.tags || []).join(' ')).toLowerCase();
+    filtered = spots.filter(s => terms.some(t => hay(s).includes(t)));
     if (currentType !== 'all') filtered = filtered.filter(s => s.type === currentType);
     filtered = filtered.slice(0, 50);
     if (!filtered.length) { placeholder('<div style="font-size:26px;">🔍</div>未找到与「' + searchQuery + '」相关的点位<br>试试「平遥」「洱海」「夜市」等关键词'); return; }
+    const totalHits = spots.filter(s => terms.some(t => hay(s).includes(t))).length;
     const h = document.createElement('div');
     h.className = 'county-header';
-    h.textContent = '🔍 「' + searchQuery + '」（' + filtered.length + '个结果' + (spots.filter(s => ((s.name || '') + ' ' + (s.county || '') + ' ' + (s.addr || '') + ' ' + (s.prov || '')).toLowerCase().includes(q)).length > 50 ? '，显示前50' : '') + '）';
+    h.textContent = '🔍 「' + searchQuery + '」（' + filtered.length + '个结果' + (totalHits > 50 ? '，显示前50' : '') + '）';
     area.appendChild(h);
     filtered.forEach(spot => appendSpotItem(area, spot, true));
     return;
@@ -2689,14 +2700,101 @@ function appendSpotItem(area, spot, showProv) {
   area.appendChild(div);
 }
 
+// ===== 搜索体验增强：热词 / 历史 / 拼音城市匹配 / ESC 清空 =====
+const HOT_WORDS = ['平遥', '洱海', '故宫', '夜市', '西湖', '古镇', '温泉', '日出'];
+const HIST_KEY = 'ts_search_hist';
+let searchHist = [];
+try { searchHist = JSON.parse(localStorage.getItem(HIST_KEY) || '[]'); } catch (e) { searchHist = []; }
+
+let pinyinMap = null; // { 拼音: [中文名,...] }
+fetch('data/city_map.json').then(r => r.json()).then(cm => {
+  const m = {};
+  Object.keys(cm).forEach(k => {
+    const py = k.split('|')[1];
+    if (!py) return;
+    (m[py] = m[py] || []).push(cm[k]);
+  });
+  pinyinMap = m;
+}).catch(function(){});
+
+function searchPinyinExtras(query) {
+  if (!pinyinMap || !query || !/^[a-zA-Z]+$/.test(query)) return [];
+  const q = query.toLowerCase();
+  const out = [];
+  Object.keys(pinyinMap).forEach(py => { if (py.indexOf(q) === 0) pinyinMap[py].forEach(n => out.push(n)); });
+  return out;
+}
+
+const chipsEl = document.getElementById('searchChips');
+function renderChips() {
+  chipsEl.innerHTML = '';
+  const addChip = (label, onClick, cls) => {
+    const c = document.createElement('span');
+    c.className = 'chip' + (cls ? ' ' + cls : '');
+    c.textContent = label;
+    c.onclick = onClick;
+    chipsEl.appendChild(c);
+  };
+  if (searchQuery) {
+    addChip('✕ 清除「' + searchQuery + '」', function() {
+      searchBoxEl.value = ''; searchQuery = ''; renderSpotList(); renderChips();
+    }, 'chip-clear');
+    return;
+  }
+  if (searchHist.length) {
+    searchHist.slice(0, 4).forEach(w => addChip('🕘 ' + w, function() { applySearch(w); }));
+  }
+  HOT_WORDS.forEach(w => addChip('🔥 ' + w, function() { applySearch(w); }));
+}
+function applySearch(word) {
+  searchBoxEl.value = word;
+  searchQuery = word;
+  renderSpotList(); renderChips(); saveHist(word);
+}
+let histTimer = null;
+function saveHist(word) {
+  if (!word || word.length < 2) return;
+  clearTimeout(histTimer);
+  histTimer = setTimeout(function() {
+    searchHist = [word].concat(searchHist.filter(w => w !== word)).slice(0, 8);
+    try { localStorage.setItem(HIST_KEY, JSON.stringify(searchHist)); } catch (e) {}
+  }, 1200);
+}
+
 const searchBoxEl = document.getElementById('searchBox');
 if (searchBoxEl) {
   searchBoxEl.addEventListener('input', function() {
     searchQuery = this.value.trim();
     if (searchQuery) map.closePopup();
-    renderSpotList();
+    renderSpotList(); renderChips(); saveHist(searchQuery);
+  });
+  searchBoxEl.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && this.value) {
+      this.value = ''; searchQuery = ''; renderSpotList(); renderChips();
+      e.stopPropagation();
+    }
   });
 }
+renderChips();
+
+// ===== 返回顶部（侧栏长列表） =====
+const backTopBtn = document.createElement('button');
+backTopBtn.id = 'backTop';
+backTopBtn.type = 'button';
+backTopBtn.setAttribute('aria-label', '返回顶部');
+backTopBtn.textContent = '↑';
+backTopBtn.onclick = function() {
+  const sb = document.getElementById('sidebar');
+  if (sb) sb.scrollTo({ top: 0, behavior: 'smooth' });
+};
+document.body.appendChild(backTopBtn);
+(function() {
+  const sb = document.getElementById('sidebar');
+  if (!sb) return;
+  sb.addEventListener('scroll', function() {
+    backTopBtn.classList.toggle('show', sb.scrollTop > 400);
+  }, { passive: true });
+})();
 renderSpotList();
 </script>
 <script>

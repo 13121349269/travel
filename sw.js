@@ -1,6 +1,6 @@
 /* 全国旅游攻略地图 - Service Worker
    策略：全部预缓存 + cache-first（静态站点，内容随部署更新，缓存名带版本号） */
-const CACHE = 'travel-v7';
+const CACHE = 'travel-v8';
 const PRECACHE = [
   './', './index.html', './map.html', './shanxi.html', './guide.html', './province.html',
   './vendor/leaflet.css', './vendor/MarkerCluster.css', './vendor/MarkerCluster.Default.css',
