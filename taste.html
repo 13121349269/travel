@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>全国美食专题 | 全国旅游攻略地图</title>
+<meta name="description" content="全国271家特色美食、194家住宿、217个网红打卡点精选，含游客真实评价、人均价格、高德导航。">
+<meta property="og:title" content="全国美食·住宿·网红点专题">
+<meta property="og:description" content="680+ 精选食宿网红点位，真实游客评价与导航。">
+<meta property="og:image" content="og-image.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍜</text></svg>">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0d1117; color: #c9d1d9; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; padding-bottom: env(safe-area-inset-bottom); }
+  header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: #161b22; border-bottom: 1px solid #30363d; position: sticky; top: 0; z-index: 100; }
+  header h1 { font-size: 17px; color: #f0c674; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  header a.back { color: #58a6ff; text-decoration: none; font-size: 13px; white-space: nowrap; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 12px; }
+  .tabs { display: flex; gap: 6px; margin: 10px 0; }
+  .tbtn { font-size: 13px; padding: 6px 14px; border-radius: 16px; border: 1px solid #30363d; background: #161b22; color: #8b949e; cursor: pointer; user-select: none; }
+  .tbtn.active { color: #f0c674; border-color: #f0c674; background: rgba(240,198,116,.08); }
+  #stats { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+  .stat { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 8px 12px; font-size: 12px; color: #8b949e; }
+  .stat b { color: #f0c674; font-size: 15px; margin-right: 3px; }
+  .filters { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
+  #kw { flex: 1; min-width: 180px; padding: 9px 12px; background: #161b22; border: 1px solid #30363d; border-radius: 8px; color: #c9d1d9; font-size: 16px; }
+  #kw:focus { outline: none; border-color: #58a6ff; }
+  #sortSel { padding: 9px 10px; background: #161b22; border: 1px solid #30363d; border-radius: 8px; color: #c9d1d9; font-size: 13px; }
+  .chips { display: none; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+  .chips.show { display: flex; }
+  .chip { padding: 4px 11px; background: #161b22; border: 1px solid #30363d; border-radius: 14px; font-size: 12px; color: #8b949e; text-decoration: none; cursor: pointer; }
+  .chip.active { color: #f0c674; border-color: #f0c674; }
+  .grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 12px; }
+  @media (min-width: 640px) { .grid { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 960px) { .grid { grid-template-columns: 1fr 1fr 1fr; } }
+  .card { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 12px 14px; }
+  .card-top { display: flex; align-items: baseline; gap: 8px; }
+  .badge { font-size: 11px; color: #ffb86c; white-space: nowrap; }
+  .card h2 { font-size: 15px; color: #e6edf3; line-height: 1.4; min-width: 0; }
+  .meta { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: #8b949e; margin-top: 6px; }
+  .meta .price { color: #7ee787; }
+  .meta .rating { color: #f0c674; }
+  .acts { display: flex; gap: 8px; margin-top: 10px; }
+  .btn { font-size: 12px; padding: 6px 12px; border-radius: 7px; border: 1px solid #30363d; background: #21262d; color: #c9d1d9; text-decoration: none; cursor: pointer; }
+  .btn:hover { border-color: #58a6ff; color: #58a6ff; }
+  .rev-box { display: none; margin-top: 10px; font-size: 13px; line-height: 1.8; color: #adbac7; border-top: 1px dashed #30363d; padding-top: 10px; }
+  .rev-box.open { display: block; }
+  #empty { display: none; text-align: center; color: #8b949e; padding: 40px 0; font-size: 14px; }
+  #more { display: none; margin: 16px auto; font-size: 13px; padding: 8px 24px; }
+</style>
+</head>
+<body>
+<header>
+  <a class="back" href="index.html">← 返回地图</a>
+  <h1 id="title">🍜 全国美食专题</h1>
+</header>
+<div class="wrap">
+  <div class="tabs" role="tablist">
+    <span class="tbtn active" data-t="food" role="tab" aria-selected="true">🍜 美食</span>
+    <span class="tbtn" data-t="stay" role="tab" aria-selected="false">🏨 住宿</span>
+    <span class="tbtn" data-t="hot" role="tab" aria-selected="false">📸 网红点</span>
+  </div>
+  <div id="stats"></div>
+  <div class="filters">
+    <input id="kw" type="search" placeholder="搜索名称 / 地点…">
+    <select id="sortSel" aria-label="排序方式">
+      <option value="default">默认排序</option>
+      <option value="rating">评分优先</option>
+      <option value="prov">按省份</option>
+    </select>
+  </div>
+  <div id="provChips" class="chips"></div>
+  <div class="grid" id="list"></div>
+  <div id="empty">未找到匹配的点位，换个关键词试试</div>
+  <button class="btn" id="more" type="button">加载更多</button>
+</div>
+<script>
+const TYPE = {
+  food: { title: '🍜 全国美食专题', label: '美食', icon: '🍜' },
+  stay: { title: '🏨 全国住宿专题', label: '住宿', icon: '🏨' },
+  hot:  { title: '📸 全国网红点专题', label: '网红点', icon: '📸' }
+};
+const PAGE = 60;
+let all = [], curT = 'food', curProv = '', kw = '', sort = 'default', shown = 0;
+function q(name) { return new URLSearchParams(location.search).get(name) || ''; }
+function gaode(lat, lng, name) { return 'https://uri.amap.com/marker?position=' + lng + ',' + lat + '&name=' + encodeURIComponent(name); }
+function ratingNum(x) { const m = String(x.rating || '').match(/(4\.\d+|5\.0)/); return m ? parseFloat(m[1]) : 0; }
+function shortProv(p) { return (p || '').replace(/(维吾尔|回族|壮族)?自治区$|省$|市$/, ''); }
+
+function curList() {
+  let rows = all.filter(x => x.type === curT);
+  if (curProv) rows = rows.filter(x => x.prov === curProv);
+  if (kw) { const k = kw.toLowerCase(); rows = rows.filter(x => ((x.name || '') + ' ' + (x.county || '') + ' ' + (x.addr || '')).toLowerCase().includes(k)); }
+  if (sort === 'rating') rows = rows.slice().sort((a, b) => ratingNum(b) - ratingNum(a));
+  else if (sort === 'prov') rows = rows.slice().sort((a, b) => (a.prov || '').localeCompare(b.prov || '', 'zh'));
+  return rows;
+}
+function renderStats(rows) {
+  const provs = new Set(all.filter(x => x.type === curT).map(x => x.prov).filter(Boolean));
+  const avg = (() => { const rs = rows.map(ratingNum).filter(Boolean); return rs.length ? (rs.reduce((a, b) => a + b, 0) / rs.length).toFixed(2) : '—'; })();
+  document.getElementById('stats').innerHTML =
+    '<div class="stat"><b>' + all.filter(x => x.type === curT).length + '</b>' + TYPE[curT].label + '精选</div>'
+    + '<div class="stat"><b>' + provs.size + '</b>覆盖省级地区</div>'
+    + '<div class="stat"><b>' + avg + '</b>平均评分</div>'
+    + '<div class="stat"><b>' + rows.length + '</b>当前筛选</div>';
+}
+function card(x) {
+  const el = document.createElement('div'); el.className = 'card';
+  el.innerHTML = '<div class="card-top"><span class="badge">' + TYPE[curT].icon + '</span><h2></h2></div>'
+    + '<p class="meta"><span>📍 ' + (x.county || shortProv(x.prov)) + (x.prov ? ' · ' + shortProv(x.prov) : '') + '</span>'
+    + (x.price ? '<span>💰 <b class="price">' + x.price + '</b></span>' : '')
+    + (x.rating ? '<span>⭐ <b class="rating">' + x.rating + '</b></span>' : '') + '</p>'
+    + '<div class="acts"><a class="btn" target="_blank" rel="noopener" href="' + gaode(x.lat, x.lng, x.name) + '">🧭 高德导航</a>'
+    + (x.review ? '<button class="btn rev" type="button">💬 评价详情</button>' : '')
+    + '<a class="btn" href="province.html?p=' + encodeURIComponent(x.prov || '') + '&t=' + curT + '">📄 同省更多 →</a></div>'
+    + (x.review ? '<div class="rev-box">' + x.review + '</div>' : '');
+  el.querySelector('h2').textContent = x.name;
+  const rb = el.querySelector('.rev-box');
+  if (rb) el.querySelector('.rev').onclick = () => rb.classList.toggle('open');
+  return el;
+}
+function renderPage() {
+  const rows = curList();
+  renderStats(rows);
+  const list = document.getElementById('list');
+  document.getElementById('empty').style.display = rows.length ? 'none' : 'block';
+  document.getElementById('more').style.display = shown < rows.length ? 'inline-block' : 'none';
+  const frag = document.createDocumentFragment();
+  rows.slice(shown, shown + PAGE).forEach(x => frag.appendChild(card(x)));
+  list.appendChild(frag);
+  shown = Math.min(shown + PAGE, rows.length);
+  document.getElementById('more').textContent = '加载更多（已显示 ' + shown + '/' + rows.length + '）';
+}
+function resetAndRender() {
+  shown = 0;
+  document.getElementById('list').innerHTML = '';
+  renderPage();
+}
+function buildProvChips() {
+  const box = document.getElementById('provChips');
+  const provs = [...new Set(all.filter(x => x.type === curT).map(x => x.prov).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'zh'));
+  box.innerHTML = '';
+  const add = (label, val) => {
+    const c = document.createElement('span');
+    c.className = 'chip' + (curProv === val ? ' active' : '');
+    c.textContent = label;
+    c.onclick = () => { curProv = (curProv === val ? '' : val); buildProvChips(); resetAndRender(); };
+    box.appendChild(c);
+  };
+  add('全国', '');
+  provs.forEach(p => add(shortProv(p) + ' ' + all.filter(x => x.type === curT && x.prov === p).length, p));
+  box.classList.add('show');
+}
+function applyType(t) {
+  curT = TYPE[t] ? t : 'food';
+  document.title = TYPE[curT].title + ' | 全国旅游攻略地图';
+  document.querySelector('meta[name="description"]').content = '全国' + TYPE[curT].label + '精选，含游客真实评价、价格与高德导航。';
+  document.getElementById('title').textContent = TYPE[curT].title;
+  document.querySelectorAll('.tbtn').forEach(b => { const on = b.dataset.t === curT; b.classList.toggle('active', on); b.setAttribute('aria-selected', on); });
+  curProv = '';
+  buildProvChips();
+  resetAndRender();
+  try { history.replaceState(null, '', location.pathname + '?t=' + curT); } catch (e) {}
+}
+document.querySelectorAll('.tbtn').forEach(b => b.onclick = () => applyType(b.dataset.t));
+document.getElementById('kw').addEventListener('input', function() { kw = this.value.trim(); resetAndRender(); });
+document.getElementById('sortSel').onchange = function() { sort = this.value; resetAndRender(); };
+document.getElementById('more').onclick = renderPage;
+
+fetch('data/featured.json').then(r => r.json()).then(f => {
+  all = f.filter(x => x.type !== 'scenic');
+  applyType(q('t') || 'food');
+}).catch(() => { document.getElementById('empty').style.display = 'block'; });
+</script>
+</body>
+</html>
