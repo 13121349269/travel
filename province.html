@@ -86,6 +86,12 @@ function gaode(lat, lng, name) { return 'https://uri.amap.com/marker?position=' 
 function init() {
   prov = q('p');
   cityParam = q('c');
+  const t0 = q('t');
+  if (t0 && document.querySelector('.tbtn[data-t="' + t0 + '"]')) {
+    curType = t0;
+    document.querySelectorAll('.tbtn').forEach(b => b.classList.toggle('active', b.dataset.t === t0));
+    $('lvSel').value = '';
+  }
   document.title = (prov ? prov + (cityParam ? '·' + cityParam : '') : '省级') + '旅游详情 | 全国旅游攻略地图';
   $('provTitle').childNodes[0].textContent = (prov || '省级') + (cityParam ? ' · ' + cityParam : '') + '旅游详情 ';
   if (prov) { $('backProv').style.display = 'inline'; $('backProv').href = 'province.html?p=' + encodeURIComponent(prov); }
