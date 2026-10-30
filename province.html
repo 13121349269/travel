@@ -241,17 +241,37 @@ function buildRows() {
   lastRows = rows;
 }
 function rate(x) { const m = (x.q || '').match(/⭐(\d\.\d)/); return m ? parseFloat(m[1]) : 0; }
+function haversineKm(a, b) {
+  const R = 6371, r = Math.PI / 180;
+  const dLa = (b.lat - a.lat) * r, dLo = (b.lng - a.lng) * r;
+  const h = Math.sin(dLa / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dLo / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+function nearSpots(x, n) { // 同省 60km 内最近的 n 家（排除自身）
+  return spots
+    .filter(s => s !== x && s.p === x.p && s.lat && x.lat)
+    .map(s => ({ s, km: haversineKm(x, s) }))
+    .filter(o => o.km <= 60)
+    .sort((a, b) => a.km - b.km)
+    .slice(0, n);
+}
 function spotCard(x) {
   const is5 = x.l === '5A';
+  const near = nearSpots(x, 3);
   const card = document.createElement('div'); card.className = 'card';
   card.innerHTML = '<div class="card-top"><span class="badge ' + (is5 ? 'b5' : 'b4') + '">' + (x.l || 'A') + '</span><h2></h2></div>'
     + '<p class="meta"><span>📍 ' + (cityMap[x.p + '|' + x.c] || x.p) + '</span><span>🎫 ' + (x.t || '票价待核实') + '</span>' + (rate(x) ? '<span>⭐ <b style="color:#f0c674">' + rate(x) + '</b></span>' : '') + '</p>'
     + '<div class="acts"><a class="btn" target="_blank" rel="noopener" href="' + gaode(x.lat, x.lng, x.n) + '">🧭 高德导航</a>'
     + (x.q ? '<button class="btn rev">💬 游客评价</button>' : '') + '</div>'
+    + (near.length ? '<p class="meta" style="margin-top:6px;"><span style="color:#8b949e;">🚶 顺路可玩：</span>'
+      + near.map(o => '<a href="javascript:void 0" class="near-link" style="color:#58a6ff;">' + o.s.n.replace(/</g, '&lt;') + '</a>（' + Math.round(o.km) + 'km）').join(' · ') + '</p>' : '')
     + (x.q ? '<div class="rev-box">' + x.q + '</div>' : '');
   card.querySelector('h2').textContent = x.n;
   const rb = card.querySelector('.rev-box');
   if (rb) card.querySelector('.rev').onclick = () => rb.classList.toggle('open');
+  card.querySelectorAll('.near-link').forEach((a, i) => {
+    a.onclick = () => { $('kw').value = near[i].s.n; rebuild(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  });
   return card;
 }
 function featCard(x) {
