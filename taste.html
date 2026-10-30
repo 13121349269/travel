@@ -53,7 +53,25 @@
 <header>
   <a class="back" href="index.html">← 返回地图</a>
   <h1 id="title">🍜 全国美食专题</h1>
+  <a class="back" id="wishBtn" href="#" role="button">♡ 心愿单(<span id="wishCount">0</span>)</a>
 </header>
+<dialog id="wishDlg" aria-label="心愿单">
+  <div class="wish-head"><b>♡ 我的心愿单</b><button class="btn" id="wishClose" type="button">关闭</button></div>
+  <div id="wishList"></div>
+  <div class="wish-foot" id="wishFoot" style="display:none;"><button class="btn" id="wishClear" type="button">🗑 清空</button></div>
+</dialog>
+<style>
+  #wishDlg { background: #161b22; color: #c9d1d9; border: 1px solid #30363d; border-radius: 12px; padding: 16px; max-width: 420px; width: calc(100% - 32px); }
+  #wishDlg::backdrop { background: rgba(0,0,0,.6); }
+  .wish-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; color: #f0c674; }
+  .wish-item { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px dashed #30363d; font-size: 13px; }
+  .wish-item .w-name { flex: 1; min-width: 0; color: #e6edf3; }
+  .wish-item .w-meta { font-size: 11px; color: #8b949e; white-space: nowrap; }
+  .wish-item .w-del { border: 0; background: none; color: #f85149; cursor: pointer; font-size: 14px; padding: 2px 6px; }
+  .wish-foot { margin-top: 12px; text-align: right; }
+  .wish-empty { color: #8b949e; font-size: 13px; padding: 20px 0; text-align: center; }
+  .btn.fav { color: #f85149; border-color: #f85149; }
+</style>
 <div class="wrap">
   <div class="tabs" role="tablist">
     <span class="tbtn active" data-t="food" role="tab" aria-selected="true">🍜 美食</span>
@@ -104,19 +122,61 @@ function renderStats(rows) {
     + '<div class="stat"><b>' + avg + '</b>平均评分</div>'
     + '<div class="stat"><b>' + rows.length + '</b>当前筛选</div>';
 }
+function wishKey(x) { return (x.prov || '') + '|' + x.name; }
+const WISH_KEY = 'ts_wishlist';
+let wish = [];
+try { wish = JSON.parse(localStorage.getItem(WISH_KEY) || '[]'); } catch (e) { wish = []; }
+function saveWish() { try { localStorage.setItem(WISH_KEY, JSON.stringify(wish)); } catch (e) {} }
+function isFav(x) { return wish.some(w => w.k === wishKey(x)); }
+function updateWishCount() { document.getElementById('wishCount').textContent = wish.length; }
+function toggleWish(x, btn) {
+  if (isFav(x)) wish = wish.filter(w => w.k !== wishKey(x));
+  else wish.unshift({ k: wishKey(x), name: x.name, type: x.type, prov: x.prov || '', county: x.county || '', price: x.price || '', rating: x.rating || '', lat: x.lat, lng: x.lng });
+  saveWish(); updateWishCount(); renderWishList();
+  if (btn) btn.classList.toggle('fav', isFav(x)), btn.textContent = isFav(x) ? '♥ 已收藏' : '♡ 收藏';
+}
+function renderWishList() {
+  const box = document.getElementById('wishList');
+  const foot = document.getElementById('wishFoot');
+  if (!wish.length) { box.innerHTML = '<div class="wish-empty">还没有收藏，浏览专题时点「♡ 收藏」加入</div>'; foot.style.display = 'none'; return; }
+  box.innerHTML = '';
+  foot.style.display = 'block';
+  const TYPE_ICON = { food: '🍜', stay: '🏨', hot: '📸' };
+  wish.forEach(w => {
+    const row = document.createElement('div'); row.className = 'wish-item';
+    const name = document.createElement('span'); name.className = 'w-name';
+    name.textContent = (TYPE_ICON[w.type] || '📍') + ' ' + w.name;
+    const meta = document.createElement('span'); meta.className = 'w-meta';
+    meta.textContent = (w.county || w.prov) + (w.rating ? ' ⭐' + w.rating : '');
+    const nav = document.createElement('a'); nav.className = 'btn'; nav.target = '_blank'; nav.rel = 'noopener';
+    nav.textContent = '🧭'; nav.href = gaode(w.lat, w.lng, w.name); nav.setAttribute('aria-label', '导航到' + w.name);
+    const del = document.createElement('button'); del.className = 'w-del'; del.type = 'button';
+    del.textContent = '✕'; del.setAttribute('aria-label', '删除' + w.name);
+    del.onclick = () => { wish = wish.filter(x => x.k !== w.k); saveWish(); updateWishCount(); renderWishList(); };
+    row.append(name, meta, nav, del);
+    box.appendChild(row);
+  });
+}
+document.getElementById('wishBtn').onclick = function(e) { e.preventDefault(); renderWishList(); document.getElementById('wishDlg').showModal(); };
+document.getElementById('wishClose').onclick = () => document.getElementById('wishDlg').close();
+document.getElementById('wishClear').onclick = function() { if (confirm('确定清空全部 ' + wish.length + ' 条收藏？')) { wish = []; saveWish(); updateWishCount(); renderWishList(); } };
+
 function card(x) {
   const el = document.createElement('div'); el.className = 'card';
+  const fav = isFav(x);
   el.innerHTML = '<div class="card-top"><span class="badge">' + TYPE[curT].icon + '</span><h2></h2></div>'
     + '<p class="meta"><span>📍 ' + (x.county || shortProv(x.prov)) + (x.prov ? ' · ' + shortProv(x.prov) : '') + '</span>'
     + (x.price ? '<span>💰 <b class="price">' + x.price + '</b></span>' : '')
     + (x.rating ? '<span>⭐ <b class="rating">' + x.rating + '</b></span>' : '') + '</p>'
     + '<div class="acts"><a class="btn" target="_blank" rel="noopener" href="' + gaode(x.lat, x.lng, x.name) + '">🧭 高德导航</a>'
     + (x.review ? '<button class="btn rev" type="button">💬 评价详情</button>' : '')
+    + '<button class="btn fav-btn' + (fav ? ' fav' : '') + '" type="button">' + (fav ? '♥ 已收藏' : '♡ 收藏') + '</button>'
     + '<a class="btn" href="province.html?p=' + encodeURIComponent(x.prov || '') + '&t=' + curT + '">📄 同省更多 →</a></div>'
     + (x.review ? '<div class="rev-box">' + x.review + '</div>' : '');
   el.querySelector('h2').textContent = x.name;
   const rb = el.querySelector('.rev-box');
   if (rb) el.querySelector('.rev').onclick = () => rb.classList.toggle('open');
+  el.querySelector('.fav-btn').onclick = function() { toggleWish(x, this); };
   return el;
 }
 function renderPage() {
@@ -169,6 +229,7 @@ document.getElementById('more').onclick = renderPage;
 
 fetch('data/featured.json').then(r => r.json()).then(f => {
   all = f.filter(x => x.type !== 'scenic');
+  updateWishCount();
   applyType(q('t') || 'food');
 }).catch(() => { document.getElementById('empty').style.display = 'block'; });
 </script>
