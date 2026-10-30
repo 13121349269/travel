@@ -1,9 +1,9 @@
 /* 全国旅游攻略地图 - Service Worker
    策略：全部预缓存 + cache-first（静态站点，内容随部署更新，缓存名带版本号） */
-const CACHE = 'travel-v19';
+const CACHE = 'travel-v20';
 const PRECACHE = [
   './', './index.html', './map.html', './shanxi.html', './guide.html', './province.html', './taste.html', './free.html',
-  './data/national.json', './data/featured.json', './data/city_map.json',
+  './data/spots.js', './data/national.json', './data/featured.json', './data/city_map.json',
   './icon-192.png', './icon-512.png', './og-image.png', './manifest.json'
 ];
 
