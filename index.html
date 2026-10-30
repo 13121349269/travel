@@ -57,6 +57,8 @@
   .chip.chip-clear { background: #30363d; }
   #backTop { position: fixed; right: 14px; bottom: 96px; width: 42px; height: 42px; border-radius: 50%; background: #21262d; border: 1px solid #30363d; color: #c9d1d9; font-size: 17px; display: none; z-index: 1200; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,.4); }
   #backTop.show { display: block; }
+  .detail-link { font-size: 11px; color: #58a6ff; text-decoration: none; margin-left: 4px; white-space: nowrap; }
+  .detail-link:hover { text-decoration: underline; }
   .prov-mini { font-size: 10px; color: #8b949e; margin-left: 6px; }
   .tag-scenic { background: rgba(88,166,255,0.15); color: #58a6ff; border-color: rgba(88,166,255,0.35); }
   .full-toggle { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #c9a0ff; background: rgba(163,113,247,0.08); border: 1px solid rgba(163,113,247,0.3); border-radius: 6px; padding: 8px 10px; margin-top: 10px; cursor: pointer; user-select: none; }
@@ -2270,6 +2272,7 @@ const spots = [
   { prov:'西藏自治区', name:'央卿仓藏餐厅', county:'拉萨市', type:'food', level:'', lat:29.655, lng:91.125, price:'人均70元', rating:'—', addr:'拉萨市城关区（近似定位）', tags:['传统藏餐','非遗手艺','本地人首选'], review:'拉萨老牌藏餐馆，曾获拉萨市群众信得过·放心餐饮店称号，专注古法传统藏餐，是本地人宴请与游客体验正宗藏餐的首选。<br>"手抓藏香猪肉质紧实，不柴不腻，带着淡淡的奶香味；藏式酸奶饭酸甜可口，解腻又养胃，每一道都遵循古法制作。"——搜狐·拉萨美食盘点<br>"专注做传统藏餐，坚守古法手艺，没有因为名气大就偷工减料，全靠味道说话。"——搜狐·拉萨美食盘点' },
   { prov:'西藏自治区', name:'文成公主大型实景剧', county:'拉萨市', type:'hot', level:'', lat:29.636, lng:91.123, price:'298-1280元/票', rating:'4.5/携程', addr:'拉萨市城关区慈觉林中国西藏文化旅游创意园', tags:['实景演出','星空为幕','拉萨之夜'], review:'以雪山星空为幕的大型藏文化实景演出，700名演员与真牦牛同台，讲述文成公主进藏和亲的故事，是拉萨之夜的仪式感体验。<br>"第四幕松赞干布带领百姓建造布达拉宫，百姓齐唱的那段，声音量级大到胸腔有点共振……一位来自山东的观众后来说恍如隔世，震撼心灵。"——大玩家旅游<br>"购票优先选择平台含往返接送的套票，比单独购票、自行打车更省心，能彻底解决夜间返程打车难的问题。"——敬慕百科' },
 ];
+// spot.id 由下方 marker 构建逻辑统一赋值（idx+1），列表点击定位与 ?spot= 分享链接均依赖该 id
 
 // ============ 地图初始化 ============
 const typeColors = {
@@ -2681,13 +2684,18 @@ function renderSpotList() { // LIST_CAP_APPLIED
 function appendSpotItem(area, spot, showProv) {
   const div = document.createElement('div');
   div.className = 'spot-item';
+  const detailHref = 'province.html?p=' + encodeURIComponent(spotProv(spot)) +
+    (spotCity(spot) ? '&c=' + encodeURIComponent(spotCity(spot)) : '') +
+    (spot.type !== 'scenic' ? '&t=' + spot.type : '');
   div.innerHTML =
     '<div class="name"><span class="dot" style="background:' + getMarkerColor(spot) + ';"></span>' + spot.name +
     (showProv && spot.prov ? ' <span class="prov-mini">' + spot.prov + '</span>' : '') +
-    ' <span class="tag-mini ' + tagClassOf(spot) + '">' + tagLabelOf(spot) + '</span></div>' +
+    ' <span class="tag-mini ' + tagClassOf(spot) + '">' + tagLabelOf(spot) + '</span>' +
+    ' <a class="detail-link" href="' + detailHref + '" onclick="event.stopPropagation()" title="查看同省更多（评价/票价/导航）">详情 →</a></div>' +
     '<div class="meta">' + spot.addr + '</div>' +
     '<div class="meta">门票：<span class="price">' + spot.price + '</span> | <span class="rating">' + spot.rating + '</span></div>';
   div.onclick = function() {
+    try { history.replaceState(null, '', location.pathname + '?spot=' + encodeURIComponent(spot.id)); } catch (e) {}
     map.flyTo([spot.lat, spot.lng], 14, { duration: 0.8 });
     if (window.innerWidth <= 860) closeSidebar(); // 手机上点景区自动收起抽屉看地图
     setTimeout(() => {
@@ -2776,6 +2784,22 @@ if (searchBoxEl) {
   });
 }
 renderChips();
+
+// ===== 分享定位：?spot=id 打开即飞到点位并弹窗 =====
+(function initSpotParam() {
+  const sid = new URLSearchParams(location.search).get('spot');
+  if (!sid) return;
+  const s = spots.find(x => String(x.id) === String(sid));
+  if (!s) return;
+  setTimeout(function() {
+    map.flyTo([s.lat, s.lng], 14, { duration: 0.8 });
+    if (window.innerWidth <= 860) closeSidebar();
+    setTimeout(function() {
+      const m = allMarkers.find(m => m.spotData.id === s.id);
+      if (m) clusterGroup.zoomToShowLayer(m, function() { m.openPopup(); });
+    }, 500);
+  }, 600);
+})();
 
 // ===== 返回顶部（侧栏长列表） =====
 const backTopBtn = document.createElement('button');
