@@ -5,6 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>全国旅游总表 | 全国旅游攻略地图</title>
 <meta name="description" content="按省浏览全国5A/4A级景区：等级/城市筛选、真实游客评价、票价与一键高德导航。">
+<link rel="canonical" href="https://travel.lovesummer.me/province.html">
+<meta property="og:title" content="全国A级景区总表 · 省市两级浏览">
+<meta property="og:description" content="全国1310家5A/4A景区，等级/城市筛选、真实游客评价、票价与一键高德导航。">
+<meta property="og:image" content="https://travel.lovesummer.me/og-image.png">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://travel.lovesummer.me/province.html">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[
+{"@type":"ListItem","position":1,"name":"全国旅游攻略地图","item":"https://travel.lovesummer.me/"},
+{"@type":"ListItem","position":2,"name":"全国A级景区总表","item":"https://travel.lovesummer.me/province.html"}]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebSite","name":"全国旅游攻略地图","url":"https://travel.lovesummer.me/"}
+</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Ccircle cx=%2216%22 cy=%2216%22 r=%2214%22 fill=%22%23a371f7%22/%3E%3Cpath d=%22M16 7l2.6 6.4L25 16l-6.4 2.6L16 25l-2.6-6.4L7 16l6.4-2.6z%22 fill=%22%23fff%22/%3E%3C/svg%3E">
 <link rel="manifest" href="manifest.json">
 <style>
@@ -47,6 +62,14 @@
   .empty { text-align: center; color: #8b949e; padding: 40px 0; }
   footer { text-align: center; color: #484f58; font-size: 11px; padding: 20px 0 30px; }
 </style>
+<style>
+  @media (max-width: 700px) {
+    header { padding-top: calc(12px + env(safe-area-inset-top)); }
+    .tbtn, .chip { min-height: 44px; display: inline-flex; align-items: center; padding: 8px 14px; }
+    .toolbar select, .toolbar input { min-height: 44px; }
+    #backTop { width: 44px !important; height: 44px !important; }
+  }
+</style>
 </head>
 <body>
 <header>
@@ -71,6 +94,7 @@
   <div class="chips" id="provChips" aria-label="省份快速跳转"></div>
 </header>
 <div class="chips" id="cityChips"></div>
+<p id="seoIntro" style="max-width:960px;margin:10px auto 0;padding:0 16px;font-size:12px;color:#8b949e;line-height:1.8;">全国A级景区总表：收录全国1310家5A/4A级景区（数据来源文旅部公报名录），支持按省份、城市、等级筛选，附游客真实评价、门票价格与高德一键导航。热门：山西451家、运城55家、浙江48家。</p>
 <main>
   <div class="stats" id="stats"></div>
   <div id="list"></div>
@@ -117,6 +141,9 @@ function init() {
     featured = prov ? feat.filter(x => x.prov === prov) : feat;
     buildProvChips();
     rebuild();
+  }).catch(() => {
+    $('seoIntro').textContent = '数据加载失败，请检查网络后刷新重试。';
+    $('seoIntro').style.color = '#f85149';
   });
   $('lvSel').onchange = rebuild; $('citySel').onchange = rebuild; $('kw').oninput = rebuild;
   $('moreBtn').onclick = renderMore;
