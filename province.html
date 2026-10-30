@@ -68,14 +68,16 @@
     <span class="tbtn" data-t="stay">🏨 住宿</span>
     <span class="tbtn" data-t="hot">📸 网红点</span>
   </div>
+  <div class="chips" id="provChips" aria-label="省份快速跳转"></div>
 </header>
 <div class="chips" id="cityChips"></div>
 <main>
   <div class="stats" id="stats"></div>
   <div id="list"></div>
+  <button class="tbtn" id="moreBtn" type="button" style="display:none;margin:16px auto;">加载更多</button>
   <div class="empty" id="empty" style="display:none">没有符合条件的景区</div>
 </main>
-<footer>数据：文旅部公报A级景区名录 · 评价来自携程/大众点评等公开平台 · <a href="index.html" style="color:#58a6ff">全国旅游攻略地图</a></footer>
+<footer>数据：文旅部公报A级景区名录 · 评价来自携程/大众点评等公开平台 · <a href="index.html" style="color:#58a6ff">全国旅游攻略地图</a> · <a href="taste.html" style="color:#58a6ff">食宿网红专题</a> · <a href="shanxi.html" style="color:#58a6ff">山西451家A级总表（表格版）</a></footer>
 <script>
 if ('serviceWorker' in navigator) { window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); }); }
 const $ = id => document.getElementById(id);
@@ -89,11 +91,11 @@ function init() {
   const t0 = q('t');
   if (t0 && document.querySelector('.tbtn[data-t="' + t0 + '"]')) {
     curType = t0;
-    document.querySelectorAll('.tbtn').forEach(b => b.classList.toggle('active', b.dataset.t === t0));
+    document.querySelectorAll('.type-bar .tbtn').forEach(b => b.classList.toggle('active', b.dataset.t === t0));
     $('lvSel').value = '';
   }
-  document.title = (prov ? prov + (cityParam ? '·' + cityParam : '') : '省级') + '旅游详情 | 全国旅游攻略地图';
-  $('provTitle').childNodes[0].textContent = (prov || '省级') + (cityParam ? ' · ' + cityParam : '') + '旅游详情 ';
+  document.title = (prov ? prov + (cityParam ? '·' + cityParam : '') : '全国') + '旅游总表 | 全国旅游攻略地图';
+  $('provTitle').childNodes[0].textContent = (prov || '全国') + (cityParam ? ' · ' + cityParam : '') + '旅游总表 ';
   if (prov) { $('backProv').style.display = 'inline'; $('backProv').href = 'province.html?p=' + encodeURIComponent(prov); }
   fetch('data/city_map.json').then(r => r.json()).catch(() => ({})).then(cm => {
     cityMap = cm || {};
@@ -113,15 +115,30 @@ function init() {
     return fetch('data/featured.json').then(r => r.json()).catch(() => []);
   }).then(feat => {
     featured = prov ? feat.filter(x => x.prov === prov) : feat;
-    render();
+    buildProvChips();
+    rebuild();
   });
-  $('lvSel').onchange = render; $('citySel').onchange = render; $('kw').oninput = render;
-  document.querySelectorAll('.tbtn').forEach(b => b.onclick = () => {
+  $('lvSel').onchange = rebuild; $('citySel').onchange = rebuild; $('kw').oninput = rebuild;
+  $('moreBtn').onclick = renderMore;
+  document.querySelectorAll('.type-bar .tbtn').forEach(b => b.onclick = () => {
     document.querySelectorAll('.tbtn').forEach(x => x.classList.remove('active'));
     b.classList.add('active'); curType = b.dataset.t;
     if (curType !== 'all') { $('lvSel').value = ''; }
-    render();
+    rebuild();
   });
+}
+function buildProvChips() { // 全国模式：省份快速跳转 chips
+  const box = $('provChips');
+  if (prov) { box.classList.remove('show'); return; }
+  const ps = [...new Set(allData.map(x => x.p))].sort((a, b) => a.localeCompare(b, 'zh'));
+  ps.forEach(p => {
+    const a = document.createElement('a');
+    a.className = 'chip';
+    a.textContent = p.replace(/(维吾尔|回族|壮族)?自治区$|省$/, '');
+    a.href = 'province.html?p=' + encodeURIComponent(p);
+    box.appendChild(a);
+  });
+  box.classList.add('show');
 }
 function buildProvJump() {
   const ps = [...new Set(allData.map(x => x.p))].sort((a, b) => a.localeCompare(b, 'zh'));
@@ -147,7 +164,25 @@ function buildCityChips(cities) {
     box.appendChild(a);
   });
 }
-function render() {
+const PAGE_SIZE = 60;
+let shown = 0, lastRows = [];
+function render() { // 追加一页
+  const rows = lastRows;
+  const moreBtn = $('moreBtn');
+  const frag = document.createDocumentFragment();
+  rows.slice(shown, shown + PAGE_SIZE).forEach(({ kind, x }) => frag.appendChild(kind === 'spot' ? spotCard(x) : featCard(x)));
+  shown = Math.min(shown + PAGE_SIZE, rows.length);
+  $('list').appendChild(frag);
+  moreBtn.style.display = rows.length > shown ? 'block' : 'none';
+  moreBtn.textContent = '加载更多（已显示 ' + shown + '/' + rows.length + '）';
+}
+function rebuild() { // 筛选变化：重置分页从头渲染
+  shown = 0; $('list').innerHTML = '';
+  buildRows();
+  render();
+}
+function renderMore() { render(); }
+function buildRows() {
   const lv = $('lvSel').value, city = $('citySel').value, kw = $('kw').value.trim().toLowerCase();
   const cnCity = x => cityMap[x.p + '|' + x.c] || x.c || '';
   const cMatch = x => !city || cnCity(x) === city;
@@ -174,9 +209,7 @@ function render() {
     + '<div class="stat"><b>' + featured.filter(x => x.type !== 'scenic').length + '</b>精选食宿网红</div>'
     + '<div class="stat"><b>' + rows.length + '</b>当前筛选</div>';
   $('empty').style.display = rows.length ? 'none' : 'block';
-  const frag = document.createDocumentFragment();
-  rows.forEach(({ kind, x }) => frag.appendChild(kind === 'spot' ? spotCard(x) : featCard(x)));
-  const list = $('list'); list.innerHTML = ''; list.appendChild(frag);
+  lastRows = rows;
 }
 function spotCard(x) {
   const is5 = x.l === '5A';
