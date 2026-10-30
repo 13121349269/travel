@@ -162,6 +162,7 @@
     <a href="map.html" title="运城55家景区详图（含导航）">🗺️<span>详图</span></a>
     <a href="guide.html" title="运城食宿与网红点攻略">🍜<span>攻略</span></a>
     <a href="taste.html" title="全国美食/住宿/网红点专题（680+精选）">🍴<span>专题</span></a>
+    <a href="free.html" title="全国283家免费A级景区榜单">🎁<span>免费榜</span></a>
     <a href="shanxi.html" title="全国A级景区总表·表格版（含山西451家全量）">📃<span>名录</span></a>
   </nav>
 </div>
@@ -2640,7 +2641,7 @@ function renderSpotList() { // LIST_CAP_APPLIED
     const q = searchQuery.toLowerCase();
     const extras = searchPinyinExtras(searchQuery); // 拼音城市命中 → 追加中文名词元
     const terms = [q].concat(extras.map(function(e){ return e.toLowerCase(); }));
-    const hay = (s) => ((s.name || '') + ' ' + (s.county || '') + ' ' + (s.addr || '') + ' ' + (s.prov || '') + ' ' + (s.tags || []).join(' ')).toLowerCase();
+    const hay = (s) => ((s.name || '') + ' ' + (s.county || '') + ' ' + (s.addr || '') + ' ' + (s.prov || '') + ' ' + (s.tags || []).join(' ') + ' ' + (s.review || '')).toLowerCase();
     filtered = spots.filter(s => terms.some(t => hay(s).includes(t)));
     if (currentType !== 'all') filtered = filtered.filter(s => s.type === currentType);
     filtered = filtered.slice(0, 50);
@@ -2755,6 +2756,8 @@ function renderChips() {
     searchHist.slice(0, 4).forEach(w => addChip('🕘 ' + w, function() { applySearch(w); }));
   }
   HOT_WORDS.forEach(w => addChip('🔥 ' + w, function() { applySearch(w); }));
+  addChip('❄️ 雪景', function() { applySearch('雪'); });
+  addChip('🌸 赏花', function() { applySearch('花'); });
 }
 function applySearch(word) {
   searchBoxEl.value = word;

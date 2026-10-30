@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>全国免费景区榜单 | 283家5A/4A级免费景点·不花门票游遍全国</title>
+<meta name="description" content="全国283家免费A级景区榜单：38家5A、245家4A，含游客真实评价与高德导航，穷游、周末游不花门票钱。">
+<link rel="canonical" href="https://travel.lovesummer.me/free.html">
+<meta property="og:title" content="全国免费景区榜单 · 283家5A/4A">
+<meta property="og:description" content="283家免费A级景区，38家5A、245家4A，游客真实评价与一键导航。">
+<meta property="og:image" content="https://travel.lovesummer.me/og-image.png">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://travel.lovesummer.me/free.html">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Ccircle cx=%2216%22 cy=%2216%22 r=%2214%22 fill=%22%233fb950%22/%3E%3Ctext x=%2216%22 y=%2222%22 font-size=%2216%22 text-anchor=%22middle%22 fill=%22%23fff%22>¥</text%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.json">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[
+{"@type":"ListItem","position":1,"name":"全国旅游攻略地图","item":"https://travel.lovesummer.me/"},
+{"@type":"ListItem","position":2,"name":"全国免费景区榜单","item":"https://travel.lovesummer.me/free.html"}]}
+</script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0d1117; color: #c9d1d9; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; padding-bottom: env(safe-area-inset-bottom); }
+  header { background: #161b22; border-bottom: 1px solid #30363d; padding: 12px 16px; position: sticky; top: 0; z-index: 100; }
+  .hrow { display: flex; align-items: center; gap: 12px; max-width: 960px; margin: 0 auto; }
+  header h1 { font-size: 17px; color: #3fb950; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .back { color: #58a6ff; text-decoration: none; font-size: 13px; white-space: nowrap; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 12px; }
+  #stats { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+  .stat { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 8px 12px; font-size: 12px; color: #8b949e; }
+  .stat b { color: #3fb950; font-size: 15px; margin-right: 3px; }
+  #provChips { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+  .chip { min-height: 34px; display: inline-flex; align-items: center; padding: 5px 12px; background: #161b22; border: 1px solid #30363d; border-radius: 14px; font-size: 12px; color: #8b949e; text-decoration: none; cursor: pointer; }
+  .chip.active { color: #3fb950; border-color: #3fb950; }
+  .grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 12px; }
+  @media (min-width: 640px) { .grid { grid-template-columns: 1fr 1fr; } }
+  .card { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 12px 14px; }
+  .card h2 { font-size: 15px; color: #e6edf3; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .lv { font-size: 11px; padding: 1px 7px; border-radius: 9px; background: rgba(240,198,116,.15); color: #f0c674; }
+  .lv.a5 { background: rgba(248,81,73,.15); color: #f85149; }
+  .meta { font-size: 12px; color: #8b949e; line-height: 1.7; }
+  .meta .free { color: #3fb950; font-weight: bold; }
+  .acts { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+  .btn { display: inline-flex; align-items: center; min-height: 34px; padding: 6px 12px; border-radius: 8px; border: 1px solid #30363d; background: #21262d; color: #58a6ff; text-decoration: none; font-size: 12px; cursor: pointer; }
+  .rev { color: #8b949e; }
+  .rev-box { display: none; margin-top: 8px; font-size: 12px; color: #8b949e; background: #0d1117; border-radius: 8px; padding: 10px; line-height: 1.8; }
+  .rev-box.open { display: block; }
+  #more { display: none; margin: 16px auto 0; min-height: 44px; padding: 10px 24px; background: #21262d; border: 1px solid #30363d; border-radius: 999px; color: #58a6ff; font-size: 13px; cursor: pointer; }
+  #empty { display: none; text-align: center; color: #8b949e; padding: 40px 0; }
+  .sk { background: linear-gradient(90deg, #161b22 25%, #1f2630 50%, #161b22 75%); background-size: 200% 100%; animation: shimmer 1.3s infinite; border-radius: 10px; height: 110px; }
+  @keyframes shimmer { to { background-position: -200% 0; } }
+  .seo { font-size: 12px; color: #8b949e; line-height: 1.8; margin-top: 24px; }
+  .seo a { color: #58a6ff; }
+  @media (max-width: 700px) {
+    header { padding-top: calc(12px + env(safe-area-inset-top)); }
+    .chip, .btn { min-height: 44px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="hrow">
+    <a class="back" href="index.html">← 返回地图</a>
+    <h1>🎁 全国免费景区榜单</h1>
+    <a class="back" href="province.html">📋 总表</a>
+  </div>
+</header>
+<div class="wrap">
+  <p class="seo" style="margin:4px 0 10px;">全部 5A/4A 级景区中票价免费者共 283 家（38 家 5A、245 家 4A），含游客真实评价与高德导航——穷游、周末游首选。</p>
+  <div id="stats" aria-busy="true"></div>
+  <div id="provChips"></div>
+  <div class="grid" id="list">
+    <div class="sk"></div><div class="sk"></div><div class="sk"></div><div class="sk"></div>
+  </div>
+  <div id="empty">该省暂无收录的免费景区</div>
+  <button id="more" type="button">加载更多</button>
+  <p class="seo">本榜单由全国 A 级景区名录自动筛选票价免费者生成，评价整理自携程/大众点评等公开平台。更多：<a href="province.html">全国A级景区总表</a> · <a href="taste.html?t=food">全国美食专题</a> · <a href="index.html">全国景点地图</a></p>
+</div>
+<script>
+const PAGE = 60;
+let all = [], curProv = '', shown = 0;
+const $ = id => document.getElementById(id);
+const q = k => new URLSearchParams(location.search).get(k) || '';
+function gaode(lat, lng, name) { return 'https://uri.amap.com/marker?position=' + lng + ',' + lat + '&name=' + encodeURIComponent(name); }
+function apply() {
+  const rows = curProv ? all.filter(x => x.p === curProv) : all;
+  const provs = [...new Set(all.map(x => x.p))];
+  $('provChips').innerHTML = '<span class="chip' + (!curProv ? ' active' : '') + '" data-p="">全部 ' + all.length + '</span>' +
+    provs.map(p => '<span class="chip' + (p === curProv ? ' active' : '') + '" data-p="' + p + '">' + p.replace(/[省市区自治区壮族回族维吾尔族]/g, '') + ' ' + all.filter(x => x.p === p).length + '</span>').join('');
+  [...$('provChips').children].forEach(c => c.onclick = () => { curProv = c.dataset.p; shown = 0; $('list').innerHTML = ''; apply(); });
+  const stats = rows.filter(x => x.l === '5A').length;
+  $('stats').innerHTML = '<div class="stat"><b>' + rows.length + '</b>免费景区</div>'
+    + '<div class="stat"><b>' + stats + '</b>5A</div>'
+    + '<div class="stat"><b>' + rows.filter(x => x.l === '4A').length + '</b>4A</div>'
+    + '<div class="stat"><b>¥0</b>门票总计</div>';
+  $('empty').style.display = rows.length ? 'none' : 'block';
+  const frag = document.createDocumentFragment();
+  rows.slice(shown, shown + PAGE).forEach(x => {
+    const el = document.createElement('div'); el.className = 'card';
+    el.innerHTML = '<h2><span class="lv' + (x.l === '5A' ? ' a5' : '') + '">' + x.l + '</span><span class="nm"></span></h2>'
+      + '<div class="meta">📍 ' + (x.p || '') + ' · 门票：<span class="free">免费</span></div>'
+      + '<div class="acts"><a class="btn" target="_blank" rel="noopener" href="' + gaode(x.lat, x.lng, x.n) + '">🧭 导航</a>'
+      + (x.q ? '<button class="btn rev" type="button">💬 评价</button>' : '')
+      + '<a class="btn" href="province.html?p=' + encodeURIComponent(x.p || '') + '">📄 全省景区 →</a></div>'
+      + (x.q ? '<div class="rev-box">' + x.q + '</div>' : '');
+    el.querySelector('.nm').textContent = x.n;
+    const rb = el.querySelector('.rev-box');
+    if (rb) el.querySelector('.rev').onclick = () => rb.classList.toggle('open');
+    frag.appendChild(el);
+  });
+  shown = Math.min(shown + PAGE, rows.length);
+  const list = $('list'); if (shown === PAGE) list.innerHTML = '';
+  list.removeAttribute('aria-busy');
+  list.appendChild(frag);
+  const mb = $('more');
+  mb.style.display = rows.length > shown ? 'block' : 'none';
+  mb.textContent = '加载更多（已显示 ' + shown + '/' + rows.length + '）';
+}
+$('more').onclick = apply;
+fetch('data/national.json').then(r => r.json()).then(data => {
+  all = data.filter(x => (x.t || '').includes('免费'));
+  curProv = q('p') || '';
+  apply();
+}).catch(() => {
+  $('list').innerHTML = '';
+  $('empty').textContent = '数据加载失败，请检查网络后刷新重试';
+  $('empty').style.display = 'block';
+});
+</script>
+</body>
+</html>
