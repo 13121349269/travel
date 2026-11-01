@@ -1,6 +1,6 @@
 /* 全国旅游攻略地图 - Service Worker
    策略：全部预缓存 + cache-first（静态站点，内容随部署更新，缓存名带版本号） */
-const CACHE = 'travel-v22';
+const CACHE = 'travel-v23';
 const PRECACHE = [
   './', './index.html', './map.html', './shanxi.html', './guide.html', './province.html', './taste.html', './free.html',
   './data/spots.js', './data/national.json', './data/featured.json', './data/city_map.json',
@@ -34,10 +34,13 @@ self.addEventListener('fetch', e => {
       const cache = await caches.open(CACHE);
       try {
         const resp = await Promise.race([
-          fetch(e.request).then(r => { cache.put(e.request, r.clone()); return r; }),
+          fetch(e.request).then(r => { if (r.ok) cache.put(e.request, r.clone()); return r; }),
           new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 3000))
         ]);
-        return resp;
+        // 拿到的仍是 404/5xx 时也回退缓存，避免把错误页展示给用户
+        if (resp.ok) return resp;
+        const fb = await caches.match(e.request);
+        return fb || (await caches.match('./')) || resp;
       } catch (err) {
         const hit = await caches.match(e.request);
         return hit || (await caches.match('./')) || Response.error();
@@ -49,10 +52,11 @@ self.addEventListener('fetch', e => {
   e.respondWith(
     caches.match(e.request, { ignoreSearch: true }).then(hit => hit ||
       fetch(e.request).then(resp => {
+        if (!resp.ok) throw new Error('http ' + resp.status);
         const copy = resp.clone();
         caches.open(CACHE).then(c => c.put(e.request, copy));
         return resp;
-      })
+      }).catch(() => caches.match(e.request, { ignoreSearch: true }).then(hit => hit || Response.error()))
     )
   );
 });
