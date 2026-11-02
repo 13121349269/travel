@@ -127,13 +127,14 @@
   <h1>全国A级景区总表 <span style="font-size:13px;color:#8b949e;">山西451家全量 · 全国1310家动态加载</span></h1>
   <p class="subtitle">山西451家静态全量（来源：山西省文旅厅名录 2025.1）+ 全国31省动态数据（来源：文旅部公报A级名录，含游客评价与导航）</p>
 
-  <div class="summary">
+  <div class="summary" id="summaryBox">
     <div class="summary-card"><div class="num">12</div><div class="label">5A级景区</div></div>
     <div class="summary-card"><div class="num">152</div><div class="label">4A级景区</div></div>
     <div class="summary-card"><div class="num">259</div><div class="label">3A级景区</div></div>
     <div class="summary-card"><div class="num">27</div><div class="label">2A级景区</div></div>
-    <div class="summary-card"><div class="num">451</div><div class="label">总计</div></div>
+    <div class="summary-card"><div class="num">451</div><div class="label">山西总计</div></div>
   </div>
+  <p id="scopeNote" style="max-width:1200px;margin:6px auto 0;padding:0 16px;font-size:12px;color:#8b949e;">以上统计为<b style="color:#f0c674;">山西省</b>数据（山西5A共12家）。<b style="color:#f0c674;">全国5A有364家、4A超900家</b>——在左侧选择任意省份即可查看该省明细；下方明细默认展示山西451家全量。</p>
 
   <div class="filter-bar" id="filterBar">
     <label>筛选等级：
@@ -645,6 +646,32 @@ function renderNational(prov, city, county) {
     .catch(() => { box.innerHTML = '<div style="text-align:center;color:#f85149;padding:40px 0;">数据加载失败，请刷新重试</div>'; });
 }
 
+// 统计卡口径切换：全国 / 山西
+const SHANXI_STATS = ['12', '152', '259', '27', '451'];
+function setStats(nums, labels, noteHtml) {
+  const ns = document.querySelectorAll('.summary .num');
+  if (ns.length >= 5) nums.forEach((v, i) => { ns[i].textContent = v; });
+  document.querySelectorAll('.summary .label').forEach((el, i) => {
+    if (labels[i]) el.textContent = labels[i];
+  });
+  const note = document.getElementById('scopeNote');
+  if (note) note.innerHTML = noteHtml;
+}
+function updateNationalStats() {
+  const apply = d => {
+    if (provSel.value) return; // 用户已选省份，勿覆盖
+    const lv = l => d.filter(x => (x.l || '') === l).length;
+    setStats([lv('5A'), lv('4A'), lv('3A'), lv('2A'), d.length], [null, null, null, null, '全国总计'],
+      '以上统计为<b style="color:#f0c674;">全国</b>数据（全国5A共' + lv('5A') + '家）。下方明细默认展示<b style="color:#f0c674;">山西451家全量</b>；在左侧选择任意省份可查看该省明细与统计。');
+  };
+  if (natCache) apply(natCache);
+  else fetch('data/national.json').then(r => r.json()).then(d => { natCache = d; apply(d); }).catch(() => {});
+}
+function restoreShanxiStats() {
+  setStats(SHANXI_STATS, [null, null, null, null, '山西总计'],
+    '以上统计为<b style="color:#f0c674;">山西省</b>数据（山西5A共12家，全国5A有364家）。在左侧选择其他省份可查看该省明细。');
+}
+
 function applyCascade() {
   const prov = provSel.value, city = citySel.value, county = countySel.value;
   const sections = document.querySelectorAll('.city-section');
@@ -664,6 +691,8 @@ function applyCascade() {
   summary.style.display = '';
   if (filterBar) filterBar.style.display = '';
   document.getElementById('natSections').innerHTML = '';
+  // 统计卡：未选省份=全国口径；选山西省=山西口径
+  if (!prov) updateNationalStats(); else restoreShanxiStats();
 
   let total = 0;
   sections.forEach(s => {
@@ -755,6 +784,8 @@ function filterYun() {
 }
 </script>
 <script>
+// 初始：统计卡按全国口径展示（明细仍为山西全量）
+updateNationalStats();
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
     navigator.serviceWorker.register('sw.js').catch(function(){});
