@@ -34,7 +34,7 @@ h1{font-size:19px;margin-bottom:12px}
 .res{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid #21262d;border-radius:10px;background:#161b22;text-decoration:none;color:#e6edf3;min-height:44px}
 .res:hover{border-color:#388bfd}
 .res .badge{flex:none;font-size:11.5px;padding:3px 8px;border-radius:6px;background:#21262d;color:#79c0ff}
-.res .badge.food{background:#2b1d12;color:#f0883e}.res .badge.stay{background:#12232b;color:#39d2c0}.res .badge.hot{background:#2b1230;color:#db61a2}.res .badge.scenic{background:#14192a;color:#79c0ff}.res .badge.city{background:#1a2b1a;color:#7ee787}.res .badge.prov{background:#2b2a12;color:#d29922}
+.res .badge.food{background:#2b1d12;color:#f0883e}.res .badge.stay{background:#12232b;color:#39d2c0}.res .badge.hot{background:#2b1230;color:#db61a2}.res .badge.scenic{background:#14192a;color:#79c0ff}.res .badge.city{background:#1a2b1a;color:#7ee787}.res .badge.prov{background:#2b2a12;color:#d29922}.res .badge.topic{background:#1f2233;color:#a5b4fc}
 .res .txt{flex:1;min-width:0}
 .res .nm{font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .res .sub{font-size:12px;color:#8b949e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -58,7 +58,7 @@ footer a{color:#58a6ff}
 <main>
 <h1>🔍 全站搜索</h1>
 <div class="search-wrap">
-<input id="q" type="search" placeholder="搜景区 / 美食 / 住宿 / 网红点 / 城市…" autocomplete="off" aria-label="搜索站内内容">
+<input id="q" type="search" placeholder="搜景区 / 美食 / 住宿 / 网红点 / 城市 / 专题…" autocomplete="off" aria-label="搜索站内内容">
 <button id="clear" aria-label="清空搜索">×</button>
 </div>
 <div class="chips" role="group" aria-label="类型筛选">
@@ -67,6 +67,7 @@ footer a{color:#58a6ff}
 <button class="chip" data-f="food" aria-pressed="false">🍜 美食</button>
 <button class="chip" data-f="stay" aria-pressed="false">🏨 住宿</button>
 <button class="chip" data-f="hot" aria-pressed="false">📸 网红点</button>
+<button class="chip" data-f="topic" aria-pressed="false">🗺 专题</button>
 <button class="chip" data-f="city" aria-pressed="false">🏙 城市</button>
 <button class="chip" data-f="prov" aria-pressed="false">🗺 省份</button>
 </div>
@@ -85,7 +86,7 @@ footer a{color:#58a6ff}
 var IDX=null,filter='all',timer=null;
 var q=document.getElementById('q'),results=document.getElementById('results'),
     meta=document.getElementById('meta'),empty=document.getElementById('empty');
-var LABEL={scenic:'景点',food:'美食',stay:'住宿',hot:'网红',city:'城市',prov:'省份'};
+var LABEL={scenic:'景点',food:'美食',stay:'住宿',hot:'网红',city:'城市',prov:'省份',topic:'专题'};
 fetch('data/search-index.json').then(r=>{if(!r.ok)throw 0;return r.json()}).then(d=>{IDX=d;run();}).catch(()=>{meta.textContent='索引加载失败，请刷新重试';});
 
 document.querySelectorAll('.chip[data-f]').forEach(c=>c.addEventListener('click',function(){
@@ -131,7 +132,7 @@ function run(){
   }
   results.innerHTML=html;
   empty.hidden=!(kw&&!shown);
-  meta.textContent=kw?('命中 '+countHit(hit)+' 条'+(shown<countHit(hit)?'，显示前80条':'')):('索引就绪：共 '+IDX.length+' 条（景区/美食/住宿/网红/城市/省份），输入关键词即可搜索');
+  meta.textContent=kw?('命中 '+countHit(hit)+' 条'+(shown<countHit(hit)?'，显示前80条':'')):('索引就绪：共 '+IDX.length+' 条（景区/美食/住宿/网红/城市/省份/专题），输入关键词即可搜索');
   function countHit(h){var f=filter;return f==='all'?h.length:h.reduce(function(s,x){return s+(x[1].t===f?1:0)},0);}
 }
 })();
