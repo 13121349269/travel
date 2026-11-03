@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>全站搜索 | 全国旅游攻略地图 — 4000+景区美食住宿网红点一站查</title>
+<meta name="description" content="搜索全国1356家A级景区、576条美食、466条住宿、458个网红打卡点及84个城市攻略、31个省份攻略，一框直达。">
+<link rel="canonical" href="https://travel.lovesummer.me/search.html">
+<meta property="og:title" content="全站搜索 | 全国旅游攻略地图">
+<meta property="og:description" content="4000+景区、美食、住宿、网红点，84城攻略一站搜索直达。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://travel.lovesummer.me/search.html">
+<meta property="og:image" content="https://travel.lovesummer.me/og-image.png">
+<style>
+:root{color-scheme:dark}
+*{margin:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:#0d1117;color:#e6edf3;font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;min-height:100dvh;padding-bottom:env(safe-area-inset-bottom)}
+nav.topnav{max-width:1200px;margin:0 auto;padding:10px 16px 0;font-size:13px;line-height:2}
+nav.topnav a{color:#58a6ff;text-decoration:none;margin-right:6px}
+main{max-width:760px;margin:0 auto;padding:12px 16px 40px}
+h1{font-size:19px;margin-bottom:12px}
+.search-wrap{position:relative;margin-bottom:10px}
+#q{width:100%;padding:13px 44px 13px 14px;font-size:16px;border-radius:12px;border:1px solid #30363d;background:#161b22;color:#e6edf3;outline:none}
+#q:focus{border-color:#58a6ff}
+#clear{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:36px;height:36px;border:0;background:none;color:#8b949e;font-size:18px;cursor:pointer;border-radius:8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 14px}
+.chip{padding:7px 14px;min-height:36px;border-radius:999px;border:1px solid #30363d;background:#161b22;color:#c9d1d9;font-size:13px;cursor:pointer}
+.chip[aria-pressed="true"]{background:#1f6feb;border-color:#1f6feb;color:#fff}
+.meta-line{color:#8b949e;font-size:12.5px;margin-bottom:10px;min-height:18px}
+.results{display:grid;gap:8px}
+.res{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid #21262d;border-radius:10px;background:#161b22;text-decoration:none;color:#e6edf3;min-height:44px}
+.res:hover{border-color:#388bfd}
+.res .badge{flex:none;font-size:11.5px;padding:3px 8px;border-radius:6px;background:#21262d;color:#79c0ff}
+.res .badge.food{background:#2b1d12;color:#f0883e}.res .badge.stay{background:#12232b;color:#39d2c0}.res .badge.hot{background:#2b1230;color:#db61a2}.res .badge.scenic{background:#14192a;color:#79c0ff}.res .badge.city{background:#1a2b1a;color:#7ee787}.res .badge.prov{background:#2b2a12;color:#d29922}
+.res .txt{flex:1;min-width:0}
+.res .nm{font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.res .sub{font-size:12px;color:#8b949e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.res .star{flex:none;color:#f0c674;font-size:12.5px}
+.empty{color:#8b949e;text-align:center;padding:40px 0;font-size:14px;line-height:2}
+.hint{color:#8b949e;font-size:12.5px;line-height:1.9;margin-top:18px}
+.hint a{color:#58a6ff}
+a[aria-label="返回顶部"]{position:fixed;right:14px;bottom:24px;width:44px;height:44px;border-radius:50%;background:#21262d;border:1px solid #30363d;color:#c9d1d9;font-size:17px;display:flex;align-items:center;justify-content:center;text-decoration:none;z-index:1200}
+footer{max-width:760px;margin:0 auto;padding:0 16px 30px;color:#8b949e;font-size:12px;line-height:1.9}
+footer a{color:#58a6ff}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+</style>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebSite","name":"全国旅游攻略地图","url":"https://travel.lovesummer.me/","potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://travel.lovesummer.me/search.html?q={search_term_string}"},"query-input":"required name=search_term_string"}}
+</script>
+</head>
+<body id="top">
+<nav class="topnav" aria-label="站内导航">
+<a href="map.html">🗺️ 地图</a><a href="province.html">📋 全国总表</a><a href="taste.html">🍜 食宿专题</a><a href="free.html">🆓 免费榜</a><a href="shanxi.html">🏯 表格版</a><a href="guide.html">📖 运城攻略</a>
+</nav>
+<main>
+<h1>🔍 全站搜索</h1>
+<div class="search-wrap">
+<input id="q" type="search" placeholder="搜景区 / 美食 / 住宿 / 网红点 / 城市…" autocomplete="off" aria-label="搜索站内内容">
+<button id="clear" aria-label="清空搜索">×</button>
+</div>
+<div class="chips" role="group" aria-label="类型筛选">
+<button class="chip" data-f="all" aria-pressed="true">全部</button>
+<button class="chip" data-f="scenic" aria-pressed="false">🏛 景点</button>
+<button class="chip" data-f="food" aria-pressed="false">🍜 美食</button>
+<button class="chip" data-f="stay" aria-pressed="false">🏨 住宿</button>
+<button class="chip" data-f="hot" aria-pressed="false">📸 网红点</button>
+<button class="chip" data-f="city" aria-pressed="false">🏙 城市</button>
+<button class="chip" data-f="prov" aria-pressed="false">🗺 省份</button>
+</div>
+<div class="chips" aria-label="热门搜索">
+<span style="color:#8b949e;font-size:12.5px;align-self:center;">热门：</span>
+<button class="chip hotk">西安</button><button class="chip hotk">大理</button><button class="chip hotk">洱海</button><button class="chip hotk">莫高窟</button><button class="chip hotk">5A</button><button class="chip hotk">火锅</button>
+</div>
+<div class="meta-line" id="meta" aria-live="polite"></div>
+<div class="results" id="results"></div>
+<div class="empty" id="empty" hidden>输入关键词开始搜索，支持景区名、美食、酒店、城市、省份</div>
+</main>
+<a href="#top" aria-label="返回顶部">&uarr;</a>
+<footer>数据：文旅部A级景区公报 · 评价来自携程/大众点评等公开平台<br><a href="index.html">全国旅游攻略地图</a> · <a href="province.html">全国A级景区总表</a> · <a href="taste.html">食宿网红专题</a> · <a href="free.html">免费景区榜</a></footer>
+<script>
+(function(){
+var IDX=null,filter='all',timer=null;
+var q=document.getElementById('q'),results=document.getElementById('results'),
+    meta=document.getElementById('meta'),empty=document.getElementById('empty');
+var LABEL={scenic:'景点',food:'美食',stay:'住宿',hot:'网红',city:'城市',prov:'省份'};
+fetch('data/search-index.json').then(r=>{if(!r.ok)throw 0;return r.json()}).then(d=>{IDX=d;run();}).catch(()=>{meta.textContent='索引加载失败，请刷新重试';});
+
+document.querySelectorAll('.chip[data-f]').forEach(c=>c.addEventListener('click',function(){
+  filter=this.dataset.f;
+  document.querySelectorAll('.chip[data-f]').forEach(x=>x.setAttribute('aria-pressed',x===this));
+  run();
+}));
+document.querySelectorAll('.hotk').forEach(c=>c.addEventListener('click',function(){q.value=this.textContent;run();q.focus();}));
+document.getElementById('clear').addEventListener('click',function(){q.value='';run();q.focus();});
+q.addEventListener('input',function(){clearTimeout(timer);timer=setTimeout(run,200);});
+q.addEventListener('keydown',function(e){if(e.key==='Escape'){q.value='';run();}});
+// URL 带关键词直达
+var init=new URLSearchParams(location.search).get('q');
+if(init){q.value=init;}
+
+function norm(s){return String(s||'').toLowerCase();}
+function run(){
+  if(!IDX)return;
+  var kw=norm(q.value.trim());
+  var hit=[];
+  if(kw){
+    for(var i=0;i<IDX.length;i++){
+      var e=IDX[i];
+      var nm=norm(e.n),py=norm(e.py);
+      var sc=0;
+      if(nm.indexOf(kw)===0)sc=3;else if(nm.indexOf(kw)>-1)sc=2;
+      else if(py.indexOf(kw)>-1)sc=1;
+      else if(norm(e.c).indexOf(kw)>-1||norm(e.p).indexOf(kw)>-1)sc=0.5;
+      if(sc)hit.push([sc,e]);
+    }
+    hit.sort(function(a,b){return b[0]-a[0]||(parseFloat(b[1].r)||0)-(parseFloat(a[1].r)||0);});
+  }
+  var shown=0;
+  var html='';
+  for(var j=0;j<hit.length&&shown<80;j++){
+    var e=hit[j][1];
+    if(filter!=='all'&&e.t!==filter)continue;
+    shown++;
+    var sub=[e.p,e.c,e.l?e.l+'景区':''].filter(Boolean).join(' · ');
+    html+='<a class="res" href="'+e.u+'"><span class="badge '+e.t+'">'+(LABEL[e.t]||e.t)+'</span>'
+      +'<span class="txt"><span class="nm">'+e.n+'</span>'+(sub?'<span class="sub">'+sub+'</span>':'')+'</span>'
+      +(e.r?'<span class="star">⭐'+e.r+'</span>':'')+'</a>';
+  }
+  results.innerHTML=html;
+  empty.hidden=!(kw&&!shown);
+  meta.textContent=kw?('命中 '+countHit(hit)+' 条'+(shown<countHit(hit)?'，显示前80条':'')):('索引就绪：共 '+IDX.length+' 条（景区/美食/住宿/网红/城市/省份），输入关键词即可搜索');
+  function countHit(h){var f=filter;return f==='all'?h.length:h.reduce(function(s,x){return s+(x[1].t===f?1:0)},0);}
+}
+})();
+</script>
+</body>
+</html>
