@@ -164,10 +164,11 @@
   </div>
 </div>
 
-<script src="vendor/leaflet.js"></script>
-<script src="vendor/markercluster.js"></script>
+<script src="vendor/leaflet.js" defer></script>
+<script src="vendor/markercluster.js" defer></script>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
 // ============ 运城55家A级景区官方名单 + 美食/住宿/网红点 ============
 const spots = [
   // ===== 盐湖区 =====
@@ -729,6 +730,9 @@ if (window.innerWidth <= 860) map.on('click', closeSidebar);
 setTimeout(() => {
   map.flyTo([34.98, 110.89], 11, { duration: 1 });
 }, 800);
+
+});
+
 </script>
 <script>
 if ('serviceWorker' in navigator) {
