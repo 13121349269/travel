@@ -33,12 +33,13 @@
   #header h1 { font-size: 16px; color: #f0c674; white-space: nowrap; }
   #header h1 span { color: #58a6ff; }
   #header nav { display: flex; flex-wrap: wrap; gap: 8px; }
-  #header nav a { color: #c9d1d9; text-decoration: none; font-size: 12px; padding: 6px 14px; border: 1px solid #30363d; border-radius: 999px; min-height: 32px; display: inline-flex; align-items: center; gap: 5px; background: rgba(13,17,23,0.6); transition: border-color .15s, color .15s, background .15s; }
+  #header nav a { color: #c9d1d9; text-decoration: none; font-size: 12px; padding: 6px 14px; border: 1px solid #30363d; border-radius: 8px; min-height: 32px; display: inline-flex; align-items: center; gap: 5px; background: rgba(13,17,23,0.6); transition: border-color .15s, color .15s, background .15s; }
   #header nav a:hover { color: #f0c674; border-color: rgba(240,198,116,0.5); background: rgba(240,198,116,0.08); }
   #header nav a:focus-visible { outline: 2px solid #58a6ff; outline-offset: 2px; }
   @media (max-width: 700px) {
-    #header nav a span { display: none; }
-    #header nav a { padding: 6px 10px; }
+    #header nav { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+    #header nav::-webkit-scrollbar { display: none; }
+    #header nav a { padding: 6px 10px; white-space: nowrap; flex-shrink: 0; }
   }
   #layout { display: flex; height: calc(100vh - 52px); height: calc(100dvh - 52px); }
   #sidebar { width: 300px; background: #161b22; border-right: 1px solid #30363d; overflow-y: auto; padding: 12px; flex-shrink: 0; display: flex; flex-direction: column; }
@@ -52,7 +53,7 @@
     border: 1px solid #30363d; border-radius: 6px; font-size: 13px; outline: none; }
   #searchBox:focus { border-color: #58a6ff; }
   #searchChips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
-  .chip { padding: 4px 11px; background: #21262d; border: 1px solid #30363d; border-radius: 20px; font-size: 12px; color: #c9d1d9; cursor: pointer; white-space: nowrap; transition: border-color .15s, color .15s; }
+  .chip { padding: 4px 11px; background: #21262d; border: 1px solid #30363d; border-radius: 6px; font-size: 12px; color: #c9d1d9; cursor: pointer; white-space: nowrap; transition: border-color .15s, color .15s; }
   .chip:hover { border-color: #58a6ff; color: #58a6ff; }
   .chip.chip-clear { background: #30363d; }
   #backTop { position: fixed; right: 14px; bottom: 96px; width: 42px; height: 42px; border-radius: 50%; background: #21262d; border: 1px solid #30363d; color: #c9d1d9; font-size: 17px; display: none; z-index: 1200; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,.4); }
@@ -129,12 +130,12 @@
     #sidebar.open { transform: translateY(0); }
     .side-head { display: flex; align-items: center; justify-content: space-between; margin: -4px 0 6px; }
     .side-head .handle { width: 44px; height: 4px; border-radius: 2px; background: #30363d; display: block; touch-action: none; }
-    .side-close { background: #21262d; border: 1px solid #30363d; color: #c9d1d9; border-radius: 999px; padding: 6px 14px; font-size: 12px; cursor: pointer; min-height: 36px; }
+    .side-close { background: #21262d; border: 1px solid #30363d; color: #c9d1d9; border-radius: 8px; padding: 6px 14px; font-size: 12px; cursor: pointer; min-height: 36px; }
     #sideToggle { display: none; }
     #sideToggle {
       display: flex; align-items: center; justify-content: center; position: fixed;
       bottom: calc(18px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%);
-      z-index: 1050; background: #f0c674; color: #0d1117; border: none; border-radius: 999px;
+      z-index: 1050; background: #f0c674; color: #0d1117; border: none; border-radius: 8px;
       padding: 0 28px; font-size: 14px; font-weight: bold; cursor: pointer;
       min-height: 46px; box-shadow: 0 4px 14px rgba(0,0,0,0.55);
     }
@@ -164,19 +165,19 @@
 <div id="header">
   <h1>🧭 全国旅游攻略 <span>· 全国1700+点位已上图</span></h1>
   <nav aria-label="页面导航">
-    <a href="province.html" title="全国1310家A级景区总表（可按省/市/类型筛选）">📋<span>总表</span></a>
-    <a href="map.html" title="运城55家景区详图（含导航）">🗺️<span>详图</span></a>
-    <a href="guide.html" title="运城食宿与网红点攻略">🍜<span>攻略</span></a>
-    <a href="taste.html" title="全国美食/住宿/网红点专题（680+精选）">🍴<span>专题</span></a>
-    <a href="free.html" title="全国283家免费A级景区榜单">🎁<span>免费榜</span></a>
-    <a href="shanxi.html" title="全国A级景区总表·表格版（含山西451家全量）">📃<span>名录</span></a>
-    <a href="search.html" title="全站搜索：景区/美食/住宿/网红点/城市一站直达">🔍<span>搜索</span></a>
+    <a href="province.html" title="全国1310家A级景区总表（可按省/市/类型筛选）"><span>总表</span></a>
+    <a href="map.html" title="运城55家景区详图（含导航）"><span>详图</span></a>
+    <a href="guide.html" title="运城食宿与网红点攻略"><span>攻略</span></a>
+    <a href="taste.html" title="全国美食/住宿/网红点专题（680+精选）"><span>专题</span></a>
+    <a href="free.html" title="全国283家免费A级景区榜单"><span>免费榜</span></a>
+    <a href="shanxi.html" title="全国A级景区总表·表格版（含山西451家全量）"><span>名录</span></a>
+    <a href="search.html" title="全站搜索：景区/美食/住宿/网红点/城市一站直达"><span>搜索</span></a>
   </nav>
 </div>
 <main>
 <div id="layout">
   <aside id="sidebar">
-    <div class="side-head"><span class="handle"></span><button type="button" class="side-close" onclick="closeSidebar()">收起 ✕</button></div>
+    <div class="side-head"><span class="handle"></span><button type="button" class="side-close" onclick="closeSidebar()">收起</button></div>
     <h2>📍 按地区选择</h2>
     <div id="statLine"></div>
     <input id="searchBox" type="search" placeholder="🔍 搜索全国景点 / 美食 / 城市…" autocomplete="off" aria-label="搜索全国景点、美食、住宿与城市">
@@ -197,12 +198,12 @@
       <span class="type-btn" onclick="filterType('hot',this)">网红点</span>
     </div>
     <label class="full-toggle"><input type="checkbox" id="fullLayerChk" onchange="toggleFullLayer(this.checked)"> 全国5A/4A全量图层 <small>1310家·懒加载</small></label>
-    <a id="provDetailLink" href="province.html" style="display:block;font-size:12px;color:#58a6ff;text-decoration:none;margin:8px 0 4px;">📄 省份5A/4A景区详情页（评价/票价/导航）</a>
+    <a id="provDetailLink" href="province.html" style="display:block;font-size:12px;color:#58a6ff;text-decoration:none;margin:8px 0 4px;">省份5A/4A景区详情页（评价/票价/导航）</a>
     <div id="spotArea"></div>
   </aside>
   <div style="flex:1;position:relative;">
     <div id="map"></div>
-    <button id="sideToggle" type="button" onclick="toggleSidebar()">📍 地区 / 景区列表</button>
+    <button id="sideToggle" type="button" onclick="toggleSidebar()">地区 / 景区列表</button>
     <div id="toast" role="status"></div>
     <div id="legend">
       <div id="legendHead" onclick="toggleLegend()" role="button" aria-expanded="true">图例 <span class="arr">▾</span></div>
