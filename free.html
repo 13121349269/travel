@@ -59,7 +59,7 @@
 html{scroll-behavior:smooth}</style>
 </head>
 <body id="top">
-<nav aria-label="站内导航" style="max-width:1200px;margin:0 auto;padding:8px 16px 0;font-size:13px;line-height:2;"><a href="map.html" style="color:#58a6ff;text-decoration:none;margin-right:6px;">🗺️ 地图</a> · <a href="province.html" style="color:#58a6ff;text-decoration:none;margin-right:6px;">📋 全国总表</a> · <a href="taste.html" style="color:#58a6ff;text-decoration:none;margin-right:6px;">🍜 食宿专题</a> · <a href="shanxi.html" style="color:#58a6ff;text-decoration:none;margin-right:6px;">🏯 表格版</a> · <a href="search.html">🔍 搜索</a><a href="guide.html" style="color:#58a6ff;text-decoration:none;margin-right:6px;">📖 运城攻略</a></nav><header>
+<nav aria-label="站内导航" style="max-width:1200px;margin:0 auto;padding:8px 16px 0;font-size:13px;line-height:2;"><a href="map.html" style="color:#58a6ff;text-decoration:none;margin-right:6px;">地图</a> · <a href="province.html" style="color:#58a6ff;text-decoration:none;margin-right:6px;">全国总表</a> · <a href="taste.html" style="color:#58a6ff;text-decoration:none;margin-right:6px;">食宿专题</a> · <a href="shanxi.html" style="color:#58a6ff;text-decoration:none;margin-right:6px;">表格版</a> · <a href="search.html">搜索</a><a href="guide.html" style="color:#58a6ff;text-decoration:none;margin-right:6px;">运城攻略</a></nav><header>
   <div class="hrow">
     <a class="back" href="index.html">← 返回地图</a>
     <h1>🎁 全国免费景区榜单</h1>
@@ -101,7 +101,7 @@ function apply() {
     el.innerHTML = '<h2><span class="lv' + (x.l === '5A' ? ' a5' : '') + '">' + x.l + '</span><span class="nm"></span></h2>'
       + '<div class="meta">📍 ' + (x.p || '') + ' · 门票：<span class="free">免费</span></div>'
       + '<div class="acts"><a class="btn" target="_blank" rel="noopener" href="' + gaode(x.lat, x.lng, x.n) + '">🧭 导航</a>'
-      + (x.q ? '<button class="btn rev" type="button">💬 评价</button>' : '')
+      + (x.q ? '<button class="btn rev" type="button">评价</button>' : '')
       + '<a class="btn" href="province.html?p=' + encodeURIComponent(x.p || '') + '">📄 全省景区 →</a></div>'
       + (x.q ? '<div class="rev-box">' + x.q + '</div>' : '');
     el.querySelector('.nm').textContent = x.n;

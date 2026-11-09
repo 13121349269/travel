@@ -68,7 +68,7 @@
 </style>
 </head>
 <body>
-<nav aria-label="站内导航" style="max-width:1200px;margin:0 auto;padding:8px 16px 0;font-size:13px;line-height:2;"><a href="map.html" style="color:#58a6ff;text-decoration:none;margin-right:6px;">🗺️ 地图</a> · <a href="province.html" style="color:#58a6ff;text-decoration:none;margin-right:6px;">📋 全国总表</a> · <a href="free.html" style="color:#58a6ff;text-decoration:none;margin-right:6px;">🆓 免费榜</a> · <a href="shanxi.html" style="color:#58a6ff;text-decoration:none;margin-right:6px;">🏯 表格版</a> · <a href="search.html">🔍 搜索</a><a href="guide.html" style="color:#58a6ff;text-decoration:none;margin-right:6px;">📖 运城攻略</a></nav><header>
+<nav aria-label="站内导航" style="max-width:1200px;margin:0 auto;padding:8px 16px 0;font-size:13px;line-height:2;"><a href="map.html" style="color:#58a6ff;text-decoration:none;margin-right:6px;">地图</a> · <a href="province.html" style="color:#58a6ff;text-decoration:none;margin-right:6px;">全国总表</a> · <a href="free.html" style="color:#58a6ff;text-decoration:none;margin-right:6px;">免费榜</a> · <a href="shanxi.html" style="color:#58a6ff;text-decoration:none;margin-right:6px;">表格版</a> · <a href="search.html">搜索</a><a href="guide.html" style="color:#58a6ff;text-decoration:none;margin-right:6px;">运城攻略</a></nav><header>
   <a class="back" href="index.html">← 返回地图</a>
   <h1 id="title">🍜 全国美食专题</h1>
   <a class="back" id="wishBtn" href="#" role="button">♡ 心愿单(<span id="wishCount">0</span>)</a>
@@ -76,7 +76,7 @@
 <dialog id="wishDlg" aria-label="心愿单">
   <div class="wish-head"><b>♡ 我的心愿单</b><button class="btn" id="wishClose" type="button">关闭</button></div>
   <div id="wishList"></div>
-  <div class="wish-foot" id="wishFoot" style="display:none;"><button class="btn" id="wishClear" type="button">🗑 清空</button></div>
+  <div class="wish-foot" id="wishFoot" style="display:none;"><button class="btn" id="wishClear" type="button">清空</button></div>
 </dialog>
 <style>
   #wishDlg { background: #161b22; color: #c9d1d9; border: 1px solid #30363d; border-radius: 12px; padding: 16px; max-width: 420px; width: calc(100% - 32px); max-height: min(80dvh, 560px); overflow-y: auto; -webkit-overflow-scrolling: touch; }
@@ -190,7 +190,7 @@ function card(x) {
     + (x.price ? '<span>💰 <b class="price">' + x.price + '</b></span>' : '')
     + (x.rating ? '<span>⭐ <b class="rating">' + x.rating + '</b></span>' : '') + '</p>'
     + '<div class="acts"><a class="btn" target="_blank" rel="noopener" href="' + gaode(x.lat, x.lng, x.name) + '">🧭 高德导航</a>'
-    + (x.review ? '<button class="btn rev" type="button">💬 评价详情</button>' : '')
+    + (x.review ? '<button class="btn rev" type="button">评价详情</button>' : '')
     + '<button class="btn fav-btn' + (fav ? ' fav' : '') + '" type="button">' + (fav ? '♥ 已收藏' : '♡ 收藏') + '</button>'
     + '<a class="btn" href="province.html?p=' + encodeURIComponent(x.prov || '') + '&t=' + curT + '">📄 同省更多 →</a></div>'
     + (x.review ? '<div class="rev-box">' + x.review + '</div>' : '');
