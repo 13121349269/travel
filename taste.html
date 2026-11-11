@@ -120,7 +120,7 @@ const TYPE = {
   hot:  { title: '📸 全国网红点专题', label: '网红点', icon: '📸' }
 };
 const PAGE = 60;
-let all = [], curT = 'food', curProv = '', kw = '', sort = 'default', shown = 0;
+let all = [], curT = 'food', curProv = '', kw = '', curTheme = '', sort = 'default', shown = 0;
 function q(name) { return new URLSearchParams(location.search).get(name) || ''; }
 function gaode(lat, lng, name) { return 'https://uri.amap.com/marker?position=' + lng + ',' + lat + '&name=' + encodeURIComponent(name); }
 function ratingNum(x) { const m = String(x.rating || '').match(/(4\.\d+|5\.0)/); return m ? parseFloat(m[1]) : 0; }
@@ -130,6 +130,7 @@ function curList() {
   let rows = all.filter(x => x.type === curT);
   if (curProv) rows = rows.filter(x => x.prov === curProv);
   if (kw) { const k = kw.toLowerCase(); rows = rows.filter(x => ((x.name || '') + ' ' + (x.county || '') + ' ' + (x.addr || '') + ' ' + (x.review || '')).toLowerCase().includes(k)); }
+  if (curTheme) { const th = THEMES_MAP[curT].find(t => t[0] === curTheme); if (th) rows = rows.filter(x => themeMatch(x, th[1])); }
   if (sort === 'rating') rows = rows.slice().sort((a, b) => ratingNum(b) - ratingNum(a));
   else if (sort === 'prov') rows = rows.slice().sort((a, b) => (a.prov || '').localeCompare(b.prov || '', 'zh'));
   return rows;
@@ -234,18 +235,23 @@ function buildProvChips() {
   provs.forEach(p => add(shortProv(p) + ' ' + all.filter(x => x.type === curT && x.prov === p).length, p));
   box.classList.add('show');
 }
-const THEMES = [['🏯 古建', '古建'], ['🏮 古镇', '古镇'], ['🐣 亲子', '娃'], ['♨️ 温泉', '温泉'], ['🚶 徒步', '徒步'], ['🏖 海滨', '海']];
+// 主题标签按类型区分：标签语义与匹配词组随类型定制（数组=任一命中）
+const THEMES_MAP = {
+  food: [['🏯 古建', ['古建']], ['🏮 古镇', ['古镇']], ['🐣 亲子', ['娃']], ['♨️ 温泉', ['温泉']], ['🚶 徒步', ['徒步']], ['🐟 海鲜·滨海', ['海']]],
+  stay: [['🏯 古韵街区', ['古建']], ['🏮 古镇客栈', ['古镇']], ['🐣 亲子', ['娃']], ['♨️ 温泉', ['温泉']], ['🚶 徒步', ['徒步']], ['🌊 海滨', ['海']]],
+  hot:  [['🏯 古建', ['古建']], ['🏮 古镇', ['古镇']], ['🐣 亲子', ['娃']], ['♨️ 温泉', ['温泉']], ['🚶 徒步', ['徒步']], ['🌊 海滨湖景', ['海滨', '海边', '海景', '湖']]]
+};
+function themeMatch(x, kws) { return kws.some(k => (x.review || '').includes(k)); }
 function buildThemeChips() {
   const box = document.getElementById('themeChips');
   box.innerHTML = '<span style="font-size:12px;color:#8b949e;align-self:center;">主题：</span>';
-  const cur = kw;
-  THEMES.forEach(([label, t]) => {
-    const n = all.filter(x => x.type === curT && (x.review || '').includes(t)).length;
+  THEMES_MAP[curT].forEach(([label, kws]) => {
+    const n = all.filter(x => x.type === curT && themeMatch(x, kws)).length;
     if (!n) return;
     const c = document.createElement('span');
-    c.className = 'chip' + (cur === t ? ' active' : '');
+    c.className = 'chip' + (curTheme === label ? ' active' : '');
     c.textContent = label + ' ' + n;
-    c.onclick = () => { const v = (cur === t ? '' : t); document.getElementById('kw').value = v; kw = v; resetAndRender(); buildThemeChips(); };
+    c.onclick = () => { curTheme = (curTheme === label ? '' : label); resetAndRender(); buildThemeChips(); };
     box.appendChild(c);
   });
 }
@@ -256,6 +262,7 @@ function applyType(t) {
   document.getElementById('title').textContent = TYPE[curT].title;
   document.querySelectorAll('.tbtn').forEach(b => { const on = b.dataset.t === curT; b.classList.toggle('active', on); b.setAttribute('aria-selected', on); });
   curProv = '';
+  curTheme = '';
   buildProvChips();
   buildThemeChips();
   resetAndRender();
