@@ -490,6 +490,7 @@ function loadDivision() {
   if (divisionData || divisionFetchStarted) return;
   divisionFetchStarted = true;
   const urls = [
+    'data/pca-code.json',
     'https://unpkg.com/china-division/dist/pca-code.json',
     'https://cdn.jsdelivr.net/npm/china-division/dist/pca-code.json'
   ];

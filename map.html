@@ -169,6 +169,8 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+// 内联 onclick 需要（函数声明提升，此处提前挂到 window）
+Object.assign(window, { switchLayer, filterType, closeSidebar, toggleSidebar });
 // ============ 运城55家A级景区官方名单 + 美食/住宿/网红点 ============
 const spots = [
   // ===== 盐湖区 =====
@@ -622,7 +624,7 @@ const markersByType = { scenic: [], food: [], stay: [], hot: [] };
 spots.forEach((spot, idx) => {
   spot.id = idx + 1;
   const color = getMarkerColor(spot);
-  const marker = L.marker([spot.lat, spot.lng], { icon: createIcon(color) });
+  const marker = L.marker([spot.lat, spot.lng], { icon: createIcon(color), title: spot.name });
 
   const tagsHtml = spot.tags.map(t => '<span class="iw-tag">' + t + '</span>').join('');
   const popupContent =
